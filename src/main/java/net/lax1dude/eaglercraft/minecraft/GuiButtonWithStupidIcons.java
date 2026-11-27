@@ -79,6 +79,18 @@ public class GuiButtonWithStupidIcons extends GuiButton {
 	public void func_191745_a(Minecraft mc, int mouseX, int mouseY, float p_191745_4_) {
 		if (this.visible) {
 			FontRenderer fontrenderer = mc.fontRendererObj;
+			if (net.aeroclient.gui.AeroButtonStyle.enabled) { // Aero Client: rounded Aero style (server icons still drawn below)
+				this.hovered = net.aeroclient.gui.AeroButtonStyle.begin(this, mc, mouseX, mouseY, this.height);
+				if (this.enabled && this.hovered) {
+					Mouse.showCursor(EnumCursorType.HAND);
+				}
+				this.mouseDragged(mc, mouseX, mouseY);
+				if (leftIcon == null && rightIcon == null) {
+					net.aeroclient.gui.AeroButtonStyle.finish(this, mc, this.height);
+					return;
+				}
+				net.aeroclient.gui.AeroButtonStyle.finishWithoutLabel();
+			} else {
 			mc.getTextureManager().bindTexture(BUTTON_TEXTURES);
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 			this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width
@@ -94,6 +106,7 @@ public class GuiButtonWithStupidIcons extends GuiButton {
 			this.drawTexturedModalRect(this.xPosition + this.width / 2, this.yPosition, 200 - this.width / 2,
 					46 + i * 20, this.width / 2, this.height);
 			this.mouseDragged(mc, mouseX, mouseY);
+			}
 			int j = 14737632;
 			if (!this.enabled) {
 				j = 10526880;

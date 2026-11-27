@@ -114,6 +114,11 @@ public final class AeroButtonStyle {
 		GlStateManager.popMatrix();
 	}
 
+	/** Ends {@link #begin} without drawing the text, for buttons that draw their own (e.g. with icons). */
+	public static void finishWithoutLabel() {
+		GlStateManager.popMatrix();
+	}
+
 	/**
 	 * A slider's value: a blue fill up to the handle, then a round handle.
 	 * {@code value} goes from 0 (left) to 1 (right).

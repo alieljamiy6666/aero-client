@@ -3,6 +3,9 @@ package net.aeroclient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.aeroclient.event.EventBus;
+import net.aeroclient.module.ModuleManager;
+
 /**
  * The main Aero Client class. Everything Aero Client does starts here.
  *
@@ -24,6 +27,12 @@ public final class AeroClient {
 	/** Prints messages to the browser console, tagged [AeroClient]. */
 	public static final Logger LOGGER = LogManager.getLogger("AeroClient");
 
+	/** Passes game events (ticks, frames, keys, chat...) to modules. */
+	public static final EventBus EVENTS = new EventBus();
+
+	/** Every Aero Client module. */
+	public static final ModuleManager MODULES = new ModuleManager();
+
 	private static boolean initialized = false;
 
 	private AeroClient() {
@@ -42,7 +51,8 @@ public final class AeroClient {
 		initialized = true;
 
 		try {
-			// Later steps add their setup here: theme, modules, config, menus...
+			MODULES.init();
+			// Later steps add their setup here: config, menus...
 			LOGGER.info(NAME + " " + VERSION + " loaded");
 		} catch (Throwable t) {
 			LOGGER.error("Aero Client failed to start. The game will keep running without it.");

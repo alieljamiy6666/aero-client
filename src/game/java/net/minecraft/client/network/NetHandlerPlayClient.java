@@ -407,6 +407,10 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 		this.netManager.sendPacket(new CPacketCustomPayload("MC|Brand",
 				(new PacketBuffer(Unpooled.buffer())).writeString(ClientBrandRetriever.getClientModName())));
 		WebViewOverlayController.setPacketSendCallback(this::webViewSendHandler);
+		// Aero Client: server join event
+		net.minecraft.client.multiplayer.ServerData aeroServer = this.gameController.getCurrentServerData();
+		net.aeroclient.AeroClient.EVENTS.post(new net.aeroclient.event.ServerJoinEvent(
+				aeroServer != null ? aeroServer.serverIP : null, this.gameController.isSingleplayer()));
 	}
 
 	/**
@@ -912,7 +916,12 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 	 * Prints a chatmessage in the chat GUI
 	 */
 	public void handleChat(SPacketChat packetIn) {
-		this.gameController.ingameGUI.func_191742_a(packetIn.func_192590_c(), packetIn.getChatComponent());
+		// Aero Client: let modules see (and change or hide) chat messages before they're shown
+		net.aeroclient.event.ChatReceiveEvent event = net.aeroclient.AeroClient.EVENTS.post(
+				new net.aeroclient.event.ChatReceiveEvent(packetIn.func_192590_c(), packetIn.getChatComponent()));
+		if (!event.isCancelled()) {
+			this.gameController.ingameGUI.func_191742_a(event.getType(), event.getMessage());
+		}
 	}
 
 	/**

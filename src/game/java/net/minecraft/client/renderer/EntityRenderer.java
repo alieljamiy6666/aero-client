@@ -1243,6 +1243,8 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 			this.renderCloudsCheck(renderglobal, partialTicks, pass, d0, d1, d2);
 		}
 
+		net.aeroclient.AeroClient.EVENTS.post(net.aeroclient.event.Render3DEvent.INSTANCE.set(partialTicks)); // Aero Client: world drawing event
+
 		if (this.renderHand) {
 			GlStateManager.clear(256);
 			this.renderHand(partialTicks, pass);

@@ -342,6 +342,10 @@ public class GuiIngame extends Gui {
 			this.overlayPlayerList.renderPlayerlist(i, scoreboard, scoreobjective1);
 		}
 
+		// Aero Client: let modules draw on the HUD (scaledresolution is this frame's screen size)
+		net.aeroclient.AeroClient.EVENTS.post(net.aeroclient.event.Render2DEvent.INSTANCE.set(partialTicks,
+				scaledresolution.getScaledWidth(), scaledresolution.getScaledHeight()));
+
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		GlStateManager.disableLighting();
 		GlStateManager.enableAlpha();

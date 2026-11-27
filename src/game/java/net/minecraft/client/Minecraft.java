@@ -1220,6 +1220,7 @@ public class Minecraft implements IThreadListener {
 	 * Runs the current tick.
 	 */
 	public void runTick() throws IOException {
+		net.aeroclient.AeroClient.EVENTS.post(net.aeroclient.event.TickEvent.INSTANCE); // Aero Client: tick event
 		if (this.rightClickDelayTimer > 0) {
 			--this.rightClickDelayTimer;
 		}
@@ -1447,6 +1448,11 @@ public class Minecraft implements IThreadListener {
 			}
 
 			boolean flag = Keyboard.getEventKeyState();
+
+			if (this.currentScreen == null) { // Aero Client: key event (only while playing, not in menus)
+				net.aeroclient.AeroClient.EVENTS
+						.post(new net.aeroclient.event.KeyEvent(i, flag, Keyboard.isRepeatEvent()));
+			}
 
 			if (flag) {
 				if (i == 62 && this.entityRenderer != null) {
@@ -1829,6 +1835,7 @@ public class Minecraft implements IThreadListener {
 
 		System.gc();
 		this.systemTime = 0L;
+		net.aeroclient.AeroClient.EVENTS.post(new net.aeroclient.event.WorldLoadEvent(worldClientIn)); // Aero Client: world load event
 	}
 
 	public void setDimensionAndSpawnPlayer(int dimension) {
