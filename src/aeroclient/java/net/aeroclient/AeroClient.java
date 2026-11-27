@@ -7,6 +7,7 @@ import net.aeroclient.config.ConfigManager;
 import net.aeroclient.event.EventBus;
 import net.aeroclient.gui.clickgui.ClickGuiScreen;
 import net.aeroclient.module.ModuleManager;
+import net.aeroclient.util.ClickTracker;
 
 /**
  * The main Aero Client class. Everything Aero Client does starts here.
@@ -56,6 +57,7 @@ public final class AeroClient {
 			MODULES.init();
 			ConfigManager.init(); // after modules, so their saved settings can be applied
 			ClickGuiScreen.install(); // Right Shift opens the Aero Client menu
+			ClickTracker.install(); // counts clicks per second for Keystrokes and CPS
 			LOGGER.info(NAME + " " + VERSION + " loaded");
 		} catch (Throwable t) {
 			LOGGER.error("Aero Client failed to start. The game will keep running without it.");

@@ -36,13 +36,9 @@ public abstract class HudModule extends Module {
 	/** Space between the background's edge and the content. */
 	public static final float PADDING = 4.0F;
 
-	protected final NumberSetting scale = add(
-			new NumberSetting("Scale", "How big it is on screen. You can also scroll over it in the HUD editor.", 1.0D,
-					0.5D, 3.0D, 0.05D));
-	protected final BooleanSetting background = add(
-			new BooleanSetting("Background", "Draw a dark box behind it.", true));
-	protected final ColorSetting backgroundColor = add(
-			new ColorSetting("Background Color", "The color of the box behind it.", 0x99101419, true));
+	protected final NumberSetting scale;
+	protected final BooleanSetting background;
+	protected final ColorSetting backgroundColor;
 
 	private final Anchor defaultAnchor;
 	private final float defaultX, defaultY;
@@ -55,7 +51,21 @@ public abstract class HudModule extends Module {
 	 * @param offsetY  starting distance from that anchor, as a fraction of the screen height
 	 */
 	protected HudModule(String name, String description, int keybind, Anchor anchor, float offsetX, float offsetY) {
+		this(name, description, keybind, anchor, offsetX, offsetY, true);
+	}
+
+	/**
+	 * @param backgroundOn whether the dark box behind it starts turned on
+	 *                     (Keystrokes draws its own keys, so it starts with it off)
+	 */
+	protected HudModule(String name, String description, int keybind, Anchor anchor, float offsetX, float offsetY,
+			boolean backgroundOn) {
 		super(name, description, Category.HUD, keybind);
+		this.scale = add(new NumberSetting("Scale",
+				"How big it is on screen. You can also scroll over it in the HUD editor.", 1.0D, 0.5D, 3.0D, 0.05D));
+		this.background = add(new BooleanSetting("Background", "Draw a dark box behind it.", backgroundOn));
+		this.backgroundColor = add(
+				new ColorSetting("Background Color", "The color of the box behind it.", 0x99101419, true));
 		this.defaultAnchor = anchor;
 		this.defaultX = offsetX;
 		this.defaultY = offsetY;
@@ -109,6 +119,11 @@ public abstract class HudModule extends Module {
 		RenderUtil.roundedRect(0, 0, width, height, 3.0F, this.backgroundColor.getColor());
 	}
 
+	/** Space between the background's edge and the content. HUD modules can change it. */
+	protected float getPadding() {
+		return PADDING;
+	}
+
 	// ---------------- size and position ----------------
 
 	public float getScale() {
@@ -121,11 +136,11 @@ public abstract class HudModule extends Module {
 
 	/** Size on screen (after scaling), in GUI units. */
 	public float getWidth() {
-		return (getContentWidth() + PADDING * 2.0F) * getScale();
+		return (getContentWidth() + getPadding() * 2.0F) * getScale();
 	}
 
 	public float getHeight() {
-		return (getContentHeight() + PADDING * 2.0F) * getScale();
+		return (getContentHeight() + getPadding() * 2.0F) * getScale();
 	}
 
 	public Anchor getAnchor() {
@@ -237,9 +252,10 @@ public abstract class HudModule extends Module {
 			GlStateManager.translate(x, y, 0.0F);
 			GlStateManager.scale(s, s, 1.0F);
 			if (this.background.isOn()) {
-				drawBackground(getContentWidth() + PADDING * 2.0F, getContentHeight() + PADDING * 2.0F);
+				float pad = getPadding();
+				drawBackground(getContentWidth() + pad * 2.0F, getContentHeight() + pad * 2.0F);
 			}
-			GlStateManager.translate(PADDING, PADDING, 0.0F);
+			GlStateManager.translate(getPadding(), getPadding(), 0.0F);
 			renderContent(editing);
 		} catch (Throwable t) {
 			AeroClient.LOGGER.error("HUD module " + getName() + " failed to draw");

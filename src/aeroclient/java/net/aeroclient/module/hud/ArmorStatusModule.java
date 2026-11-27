@@ -150,7 +150,7 @@ public class ArmorStatusModule extends HudModule {
 		}
 		// line the slots up with the hotbar's slots (its row is centered 11 units above the bottom)
 		float rowCenter = vertical() ? getContentHeight() - cell() / 2.0F : cell() / 2.0F;
-		return screenH - 11.0F - (PADDING + rowCenter) * getScale();
+		return screenH - 11.0F - (getPadding() + rowCenter) * getScale();
 	}
 
 	@Override

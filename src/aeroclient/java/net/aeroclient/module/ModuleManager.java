@@ -9,7 +9,9 @@ import net.aeroclient.event.KeyEvent;
 import net.aeroclient.module.hud.ArmorStatusModule;
 import net.aeroclient.module.hud.ClockModule;
 import net.aeroclient.module.hud.CoordinatesModule;
+import net.aeroclient.module.hud.CpsModule;
 import net.aeroclient.module.hud.FpsModule;
+import net.aeroclient.module.hud.KeystrokesModule;
 import net.aeroclient.module.hud.PingModule;
 import net.aeroclient.module.hud.PotionEffectsModule;
 import net.aeroclient.module.hud.ServerInfoModule;
@@ -38,6 +40,8 @@ public final class ModuleManager {
 		register(new ClockModule());
 		register(new ServerInfoModule());
 		register(new SpeedModule());
+		register(new KeystrokesModule());
+		register(new CpsModule());
 
 		AeroClient.EVENTS.subscribe(KeyEvent.class, this::onKey);
 		AeroClient.LOGGER.info("Registered " + modules.size() + " module(s)");

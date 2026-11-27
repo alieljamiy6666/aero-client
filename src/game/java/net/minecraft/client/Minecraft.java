@@ -1682,6 +1682,10 @@ public class Minecraft implements IThreadListener {
 	private void runTickMouse() throws IOException {
 		while (Mouse.next()) {
 			int i = Mouse.getEventButton();
+			if (i >= 0) { // Aero Client: mouse click event (used for CPS)
+				net.aeroclient.AeroClient.EVENTS
+						.post(net.aeroclient.event.MouseEvent.INSTANCE.set(i, Mouse.getEventButtonState()));
+			}
 			KeyBinding.setKeyBindState(i - 100, Mouse.getEventButtonState());
 
 			if (Mouse.getEventButtonState()) {
