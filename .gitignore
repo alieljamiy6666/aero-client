@@ -16,3 +16,10 @@ desktopRuntime/filesystem/*
 desktopRuntime/crash-reports/*
 desktopRuntime/downloads/*
 desktopRuntime/screenshots/*
+
+# Aero Client: build output. The GitHub build makes these fresh every time,
+# so they don't need to be saved in Git.
+javascript/classes.js
+javascript/classes.js.map
+javascript/assets.epk
+javascript/*_Offline_*.html
