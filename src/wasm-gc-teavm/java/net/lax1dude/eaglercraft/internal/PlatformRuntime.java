@@ -89,7 +89,7 @@ public class PlatformRuntime {
 
 		PlatformAssets.readAssetsTeaVM();
 
-		byte[] finalLoadScreen = PlatformAssets.getResourceBytes("/assets/eagler/eagtek.png");
+		byte[] finalLoadScreen = PlatformAssets.getResourceBytes("/assets/minecraft/aeroclient/loading.png"); // Aero Client: our "starting up" picture
 
 		if(finalLoadScreen != null) {
 			EarlyLoadScreen.initialize();

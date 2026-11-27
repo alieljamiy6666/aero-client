@@ -49,7 +49,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: aero-client-offline
-          path: javascript/Eaglercraft_1.12_Offline_en_US.html
+          path: javascript/Aero_Client_1.12_Offline_en_US.html
           if-no-files-found: error
 
       - name: Save the web build as a download
