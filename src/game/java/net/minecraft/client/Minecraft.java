@@ -469,6 +469,7 @@ public class Minecraft implements IThreadListener {
 		this.saveLoader = new EaglerSaveFormat(new VFile2(this.mcDataDir, "worlds"), this.dataFixer);
 		this.mcSoundHandler = new SoundHandler(this.mcResourceManager, this.gameSettings);
 		this.mcResourceManager.registerReloadListener(this.mcSoundHandler);
+		net.aeroclient.gui.AeroLoadingScreen.progress(this, 0.12F, "Loading fonts"); // Aero Client
 		this.scaledResolution = new ScaledResolution(this);
 		this.mcMusicTicker = new MusicTicker(this);
 		this.fontRendererObj = EaglerFontRenderer.createSupportedFontRenderer(this.gameSettings,
@@ -499,6 +500,7 @@ public class Minecraft implements IThreadListener {
 		GlStateManager.loadIdentity();
 		GlStateManager.matrixMode(5888);
 		this.checkGLError("Startup");
+		net.aeroclient.gui.AeroLoadingScreen.progress(this, 0.25F, "Loading textures and models"); // Aero Client
 		this.textureMapBlocks = new TextureMap("textures");
 		this.textureMapBlocks.setMipmapLevels(this.gameSettings.mipmapLevels);
 		this.renderEngine.loadTickableTexture(TextureMap.LOCATION_BLOCKS_TEXTURE, this.textureMapBlocks);
@@ -506,6 +508,7 @@ public class Minecraft implements IThreadListener {
 		this.textureMapBlocks.setBlurMipmapDirect(false, this.gameSettings.mipmapLevels > 0);
 		this.modelManager = new ModelManager(this.textureMapBlocks);
 		this.mcResourceManager.registerReloadListener(this.modelManager);
+		net.aeroclient.gui.AeroLoadingScreen.progress(this, 0.70F, "Preparing renderers"); // Aero Client
 		this.blockColors = BlockColors.init();
 		this.itemColors = ItemColors.init(this.blockColors);
 		this.renderItem = new RenderItem(this.renderEngine, this.modelManager, this.itemColors);
@@ -519,8 +522,10 @@ public class Minecraft implements IThreadListener {
 		this.mcResourceManager.registerReloadListener(this.blockRenderDispatcher);
 		this.renderGlobal = new RenderGlobal(this);
 		this.mcResourceManager.registerReloadListener(this.renderGlobal);
+		net.aeroclient.gui.AeroLoadingScreen.progress(this, 0.82F, "Building item search"); // Aero Client
 		this.func_193986_ar();
 		this.mcResourceManager.registerReloadListener(this.field_193995_ae);
+		net.aeroclient.gui.AeroLoadingScreen.progress(this, 0.94F, "Almost ready"); // Aero Client
 		GlStateManager.viewport(0, 0, this.displayWidth, this.displayHeight);
 		this.effectRenderer = new ParticleManager(this.world, this.renderEngine);
 		SkinPreviewRenderer.initialize();
@@ -540,6 +545,7 @@ public class Minecraft implements IThreadListener {
 
 		// Aero Client: start Aero Client now that the window and resources are ready
 		net.aeroclient.AeroClient.init();
+		net.aeroclient.gui.AeroLoadingScreen.progress(this, 1.0F, "Ready"); // Aero Client
 
 		if (this.serverName != null) {
 			this.displayGuiScreen(new GuiConnecting(new GuiScreenEditProfile(new GuiMainMenu()), this, this.serverName,
@@ -548,7 +554,9 @@ public class Minecraft implements IThreadListener {
 			this.displayGuiScreen(new GuiScreenEditProfile(new GuiMainMenu()));
 		}
 
-		this.renderEngine.deleteTexture(this.mojangLogo);
+		if (this.mojangLogo != null) { // Aero Client: there's no Mojang logo when our loading screen was used
+			this.renderEngine.deleteTexture(this.mojangLogo);
+		}
 		this.mojangLogo = null;
 		this.loadingScreen = new LoadingScreenRenderer(this);
 		this.debugRenderer = new DebugRenderer(this);
@@ -604,7 +612,7 @@ public class Minecraft implements IThreadListener {
 
 	private void createDisplay() {
 		Display.create();
-		Display.setTitle("Eaglercraft 1.12.2");
+		Display.setTitle(net.aeroclient.AeroClient.NAME + " 1.12.2"); // Aero Client: window title
 	}
 
 	public String getVersion() {
@@ -684,6 +692,11 @@ public class Minecraft implements IThreadListener {
 	private void drawSplashScreen(TextureManager textureManagerInstance) {
 		Display.update();
 		updateDisplayMode();
+
+		// Aero Client: show the Aero Client loading screen instead of the Mojang splash (falls back to it on error)
+		if (net.aeroclient.gui.AeroLoadingScreen.begin(this)) {
+			return;
+		}
 		GlStateManager.viewport(0, 0, displayWidth, displayHeight);
 		GlStateManager.matrixMode(5889);
 		GlStateManager.loadIdentity();

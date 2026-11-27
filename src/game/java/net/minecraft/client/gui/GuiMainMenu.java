@@ -69,7 +69,7 @@ public class GuiMainMenu extends GuiScreen {
 	public static final String MORE_INFO_TEXT = "Please click " + TextFormatting.UNDERLINE + "here"
 			+ TextFormatting.RESET + " for more information.";
 
-	private static final ResourceLocation SPLASH_TEXTS = new ResourceLocation("texts/splashes.txt");
+	private static final ResourceLocation SPLASH_TEXTS = new ResourceLocation("aeroclient/splashes.txt"); // Aero Client: our own splash texts
 	private static final ResourceLocation MINECRAFT_TITLE_TEXTURES = new ResourceLocation(
 			"textures/gui/title/minecraft.png");
 	private static final ResourceLocation field_194400_H = new ResourceLocation("textures/gui/title/edition.png");
@@ -167,12 +167,13 @@ public class GuiMainMenu extends GuiScreen {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
 
+		// Aero Client: these language entries were missing, so the raw key showed up on holidays
 		if (calendar.get(2) + 1 == 12 && calendar.get(5) == 24) {
-			this.splashText = I18n.format("eaglercraft.splashes.xmas");
+			this.splashText = "Merry Christmas!";
 		} else if (calendar.get(2) + 1 == 1 && calendar.get(5) == 1) {
-			this.splashText = I18n.format("eaglercraft.splashes.newyear");
+			this.splashText = "Happy New Year!";
 		} else if (calendar.get(2) + 1 == 10 && calendar.get(5) == 31) {
-			this.splashText = I18n.format("eaglercraft.splashes.halloween");
+			this.splashText = "Happy Halloween!";
 		}
 
 		int i = 24;
@@ -459,26 +460,12 @@ public class GuiMainMenu extends GuiScreen {
 		int k = 30;
 		this.drawGradientRect(0, 0, this.width, this.height, -2130706433, 16777215);
 		this.drawGradientRect(0, 0, this.width, this.height, 0, Integer.MIN_VALUE);
-		this.mc.getTextureManager().bindTexture(MINECRAFT_TITLE_TEXTURES);
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-
-		if ((double) this.updateCounter < 1.0E-4D) {
-			this.drawTexturedModalRect(j + 0, 30, 0, 0, 99, 44);
-			this.drawTexturedModalRect(j + 99, 30, 129, 0, 27, 44);
-			this.drawTexturedModalRect(j + 99 + 26, 30, 126, 0, 3, 44);
-			this.drawTexturedModalRect(j + 99 + 26 + 3, 30, 99, 0, 26, 44);
-			this.drawTexturedModalRect(j + 155, 30, 0, 45, 155, 44);
-		} else {
-			this.drawTexturedModalRect(j + 0, 30, 0, 0, 155, 44);
-			this.drawTexturedModalRect(j + 155, 30, 0, 45, 155, 44);
-		}
-
-		this.mc.getTextureManager().bindTexture(field_194400_H);
-
-		drawModalRectWithCustomSizedTexture(j + 88, 67, 0.0F, 0.0F, 98, 14, 128.0F, 16.0F);
+		// Aero Client: draw the animated Aero Client logo instead of the Minecraft title and "Java Edition"
+		net.aeroclient.gui.AeroBranding.drawTitleLogo(this.mc, this.width, this.height);
 
 		GlStateManager.pushMatrix();
-		GlStateManager.translate((float) (this.width / 2 + 90), 70.0F, 0.0F);
+		GlStateManager.translate(net.aeroclient.gui.AeroBranding.splashX(this.width, this.height), // Aero Client: splash sits by our logo
+				net.aeroclient.gui.AeroBranding.splashY(this.width, this.height), 0.0F);
 		GlStateManager.rotate(-20.0F, 0.0F, 0.0F, 1.0F);
 		float f = 1.8F - MathHelper.abs(
 				MathHelper.sin((float) (Minecraft.getSystemTime() % 1000L) / 1000.0F * ((float) Math.PI * 2F)) * 0.1F);
@@ -486,15 +473,8 @@ public class GuiMainMenu extends GuiScreen {
 		GlStateManager.scale(f, f, f);
 		this.drawCenteredString(this.fontRendererObj, this.splashText, 0, -8, -256);
 		GlStateManager.popMatrix();
-		String s = "Minecraft 1.12.2";
-
-		if (this.mc.isDemo()) {
-			s = s + " Demo";
-		}
-
-		this.drawString(this.fontRendererObj, s, 2, this.height - 20, -1);
-		this.drawString(this.fontRendererObj, "Eaglercraft 1.12.2 (" + EaglercraftVersion.projectOriginVersion + ")", 2,
-				this.height - 10, -1);
+		// Aero Client: show "Aero Client v1.0.0" and the port credit instead of the Minecraft/Eaglercraft versions
+		net.aeroclient.gui.AeroBranding.drawVersionText(this.fontRendererObj, this.height);
 		this.drawString(this.fontRendererObj, "Resources copyright Mojang AB", this.field_193979_N, this.height - 10,
 				-1);
 
