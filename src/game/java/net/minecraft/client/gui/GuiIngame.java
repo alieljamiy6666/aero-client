@@ -420,6 +420,9 @@ public class GuiIngame extends Gui {
 	}
 
 	protected void renderPotionEffects(ScaledResolution resolution) {
+		if (net.aeroclient.module.hud.PotionEffectsModule.hidesVanilla()) {
+			return; // Aero Client: the Potion Effects module shows these instead
+		}
 		Collection<PotionEffect> collection = this.mc.player.getActivePotionEffects();
 
 		if (!collection.isEmpty()) {

@@ -6,6 +6,14 @@ import java.util.List;
 
 import net.aeroclient.AeroClient;
 import net.aeroclient.event.KeyEvent;
+import net.aeroclient.module.hud.ArmorStatusModule;
+import net.aeroclient.module.hud.ClockModule;
+import net.aeroclient.module.hud.CoordinatesModule;
+import net.aeroclient.module.hud.FpsModule;
+import net.aeroclient.module.hud.PingModule;
+import net.aeroclient.module.hud.PotionEffectsModule;
+import net.aeroclient.module.hud.ServerInfoModule;
+import net.aeroclient.module.hud.SpeedModule;
 import net.aeroclient.module.misc.TestModule;
 import net.minecraft.client.Minecraft;
 
@@ -21,6 +29,15 @@ public final class ModuleManager {
 	/** Registers every module and starts listening for keybinds. Called once at startup. */
 	public void init() {
 		register(new TestModule());
+		// HUD modules
+		register(new FpsModule());
+		register(new PingModule());
+		register(new CoordinatesModule());
+		register(new ArmorStatusModule());
+		register(new PotionEffectsModule());
+		register(new ClockModule());
+		register(new ServerInfoModule());
+		register(new SpeedModule());
 
 		AeroClient.EVENTS.subscribe(KeyEvent.class, this::onKey);
 		AeroClient.LOGGER.info("Registered " + modules.size() + " module(s)");

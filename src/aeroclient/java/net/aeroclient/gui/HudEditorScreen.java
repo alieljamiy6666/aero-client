@@ -419,8 +419,7 @@ public class HudEditorScreen extends GuiScreen {
 			if (isResetArmed()) {
 				for (Module m : AeroClient.MODULES.getModules()) {
 					if (m instanceof HudModule) {
-						((HudModule) m).resetPosition();
-						((HudModule) m).setScale(1.0D);
+						((HudModule) m).resetLayout();
 					}
 				}
 				ConfigManager.markDirty();

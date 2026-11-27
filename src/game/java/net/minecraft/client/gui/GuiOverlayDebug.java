@@ -54,12 +54,14 @@ public class GuiOverlayDebug extends Gui {
 			int i = 2;
 
 			if (this.mc.gameSettings.hudFps) {
-				drawFPS(2, i);
+				if (!net.aeroclient.module.hud.FpsModule.hidesVanilla()) { // Aero Client: the FPS module replaces this line
+					drawFPS(2, i);
+					i += 9;
+				}
 				drawSingleplayerStats(scaledResolutionIn);
-				i += 9;
 			}
 
-			if (this.mc.gameSettings.hudCoords) {
+			if (this.mc.gameSettings.hudCoords && !net.aeroclient.module.hud.CoordinatesModule.hidesVanilla()) { // Aero Client: the Coordinates module replaces this line
 				drawXYZ(2, i);
 			}
 		}

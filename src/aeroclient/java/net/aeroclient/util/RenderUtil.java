@@ -55,6 +55,29 @@ public final class RenderUtil {
 		nineSlice(circleTexture.getGlTextureId(), x, y, w, h, r, color, color, false, true);
 	}
 
+	/**
+	 * Just the outline of a rounded rectangle: a smooth border {@code thickness}
+	 * units wide with nothing inside, so a see-through fill under it stays
+	 * see-through. Rings for each thickness-to-radius ratio are made once and kept.
+	 */
+	public static void roundedOutline(float x, float y, float w, float h, float r, float thickness, int color) {
+		r = Math.min(r, Math.min(w, h) / 2.0F);
+		if (r <= thickness + 0.01F) {
+			roundedRect(x, y, w, h, r, color); // too thin to have a hole
+			return;
+		}
+		int key = Math.max(1, Math.min(RING_STEPS - 1, Math.round(thickness / r * RING_STEPS)));
+		DynamicTexture ring = RING_TEXTURES.get(key);
+		if (ring == null) {
+			ring = makeTexture(false, TEX_SIZE / 2.0F * (1.0F - key / (float) RING_STEPS));
+			RING_TEXTURES.put(key, ring);
+		}
+		nineSlice(ring.getGlTextureId(), x, y, w, h, r, color, color, false, true);
+	}
+
+	private static final int RING_STEPS = 40;
+	private static final java.util.Map<Integer, DynamicTexture> RING_TEXTURES = new java.util.HashMap<>();
+
 	/** A pill: a rounded rectangle whose ends are full half-circles. */
 	public static void pill(float x, float y, float w, float h, int color) {
 		roundedRect(x, y, w, h, Math.min(w, h) / 2.0F, color);
@@ -365,6 +388,11 @@ public final class RenderUtil {
 	}
 
 	private static DynamicTexture makeTexture(boolean glow) {
+		return makeTexture(glow, -1.0F);
+	}
+
+	/** A soft circle, a glow, or (when {@code innerRadius} is 0 or more) a ring with a hole in the middle. */
+	private static DynamicTexture makeTexture(boolean glow, float innerRadius) {
 		DynamicTexture texture = new DynamicTexture(TEX_SIZE, TEX_SIZE);
 		int[] pixels = texture.getTextureData();
 		float center = TEX_SIZE / 2.0F;
@@ -378,6 +406,9 @@ public final class RenderUtil {
 					alpha = (float) Math.pow(t, 1.6D); // soft falloff
 				} else {
 					alpha = Math.max(0.0F, Math.min(1.0F, center - d)); // smooth 1-pixel edge
+					if (innerRadius >= 0.0F) {
+						alpha = Math.min(alpha, Math.max(0.0F, Math.min(1.0F, d - innerRadius))); // the hole
+					}
 				}
 				pixels[y * TEX_SIZE + x] = (Math.round(alpha * 255.0F) << 24) | 0x00FFFFFF;
 			}

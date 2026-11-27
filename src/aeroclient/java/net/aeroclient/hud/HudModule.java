@@ -85,6 +85,25 @@ public abstract class HudModule extends Module {
 	 */
 	protected abstract void renderContent(boolean editing);
 
+	/**
+	 * False when there's nothing to show right now (for example Armor Status
+	 * with no armor on). Then nothing is drawn in game, not even the
+	 * background. The HUD editor always draws the element so it can be moved.
+	 */
+	protected boolean hasContent() {
+		return true;
+	}
+
+	/** True while the HUD editor is open. */
+	protected final boolean isEditing() {
+		return this.mc.currentScreen instanceof HudEditorScreen;
+	}
+
+	/** True when there's no world or player yet (the title screen), so example values should be shown. */
+	protected final boolean isPreview() {
+		return this.mc.world == null || this.mc.player == null;
+	}
+
 	/** Draws the box behind the content. HUD modules can change this (e.g. to add a border). */
 	protected void drawBackground(float width, float height) {
 		RenderUtil.roundedRect(0, 0, width, height, 3.0F, this.backgroundColor.getColor());
@@ -177,6 +196,12 @@ public abstract class HudModule extends Module {
 		this.offsetY = this.defaultY;
 	}
 
+	/** "Reset Layout" in the HUD editor: back to the starting spot and size. */
+	public void resetLayout() {
+		resetPosition();
+		setScale(1.0D);
+	}
+
 	@Override
 	public void resetToDefaults() {
 		super.resetToDefaults();
@@ -198,6 +223,9 @@ public abstract class HudModule extends Module {
 	 * stays sharp. Problems in a module's drawing are logged, not crashes.
 	 */
 	public final void render(float screenW, float screenH, boolean editing) {
+		if (!editing && !hasContent()) {
+			return;
+		}
 		float s = getScale();
 		float x = getX(screenW), y = getY(screenH);
 		float pixels = this.mc.displayWidth / Math.max(1.0F, screenW); // screen pixels per GUI unit
