@@ -477,6 +477,7 @@ public class PlayerControllerMP {
 	public void attackEntity(EntityPlayer playerIn, Entity targetEntity) {
 		this.syncCurrentPlayItem();
 		this.connection.sendPacket(new CPacketUseEntity(targetEntity));
+		net.aeroclient.AeroClient.EVENTS.post(net.aeroclient.event.AttackEvent.INSTANCE.set(targetEntity)); // Aero Client: attack notice (Combo Counter)
 
 		if (this.currentGameType != GameType.SPECTATOR) {
 			playerIn.attackTargetEntityWithCurrentItem(targetEntity);

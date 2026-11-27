@@ -355,6 +355,14 @@ public class GuiIngame extends Gui {
 		this.mc.getTextureManager().bindTexture(ICONS);
 		GameSettings gamesettings = this.mc.gameSettings;
 
+		if (gamesettings.thirdPersonView != 0 && net.aeroclient.module.pvp.CrosshairModule.showsInThirdPerson()) {
+			// Aero Client: the custom crosshair can also show in third person
+			net.aeroclient.module.pvp.CrosshairModule.drawCustom(p_184045_2_.getScaledWidth(),
+					p_184045_2_.getScaledHeight());
+			this.mc.getTextureManager().bindTexture(ICONS);
+			return;
+		}
+
 		if (gamesettings.thirdPersonView == 0) {
 			if (this.mc.playerController.isSpectator() && this.mc.pointedEntity == null) {
 				RayTraceResult raytraceresult = this.mc.objectMouseOver;
@@ -392,7 +400,15 @@ public class GuiIngame extends Gui {
 				GlStateManager.tryBlendFuncSeparate(RealOpenGLEnums.GL_ONE_MINUS_DST_COLOR,
 						RealOpenGLEnums.GL_ONE_MINUS_SRC_COLOR, RealOpenGLEnums.GL_ONE, RealOpenGLEnums.GL_ZERO);
 				GlStateManager.enableAlpha();
-				this.drawTexturedModalRect(l / 2 - 7, i1 / 2 - 7, 0, 0, 16, 16);
+				if (net.aeroclient.module.pvp.CrosshairModule.drawCustom(l, i1)) { // Aero Client: custom crosshair
+					this.mc.getTextureManager().bindTexture(ICONS);
+					GlStateManager.enableBlend();
+					GlStateManager.tryBlendFuncSeparate(RealOpenGLEnums.GL_ONE_MINUS_DST_COLOR,
+							RealOpenGLEnums.GL_ONE_MINUS_SRC_COLOR, RealOpenGLEnums.GL_ONE, RealOpenGLEnums.GL_ZERO);
+					GlStateManager.enableAlpha();
+				} else {
+					this.drawTexturedModalRect(l / 2 - 7, i1 / 2 - 7, 0, 0, 16, 16);
+				}
 
 				if (this.mc.gameSettings.attackIndicator == 1) {
 					float f = this.mc.player.getCooledAttackStrength(0.0F);

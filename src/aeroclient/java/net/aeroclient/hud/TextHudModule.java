@@ -1,5 +1,6 @@
 package net.aeroclient.hud;
 
+import net.aeroclient.module.Category;
 import net.aeroclient.module.setting.BooleanSetting;
 import net.aeroclient.theme.Theme;
 import net.minecraft.client.Minecraft;
@@ -37,7 +38,12 @@ public abstract class TextHudModule extends HudModule {
 
 	protected TextHudModule(String name, String description, int keybind, Anchor anchor, float offsetX,
 			float offsetY) {
-		super(name, description, keybind, anchor, offsetX, offsetY);
+		this(name, description, Category.HUD, keybind, anchor, offsetX, offsetY);
+	}
+
+	protected TextHudModule(String name, String description, Category category, int keybind, Anchor anchor,
+			float offsetX, float offsetY) {
+		super(name, description, category, keybind, anchor, offsetX, offsetY, true);
 		for (int i = 0; i < MAX_LINES; i++) {
 			this.labels[i] = "";
 			this.values[i] = "";

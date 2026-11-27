@@ -60,7 +60,16 @@ public abstract class HudModule extends Module {
 	 */
 	protected HudModule(String name, String description, int keybind, Anchor anchor, float offsetX, float offsetY,
 			boolean backgroundOn) {
-		super(name, description, Category.HUD, keybind);
+		this(name, description, Category.HUD, keybind, anchor, offsetX, offsetY, backgroundOn);
+	}
+
+	/**
+	 * @param category which menu group it's in; HUD elements that belong to
+	 *                 another group (like the PvP Combo Counter) pass it here
+	 */
+	protected HudModule(String name, String description, Category category, int keybind, Anchor anchor,
+			float offsetX, float offsetY, boolean backgroundOn) {
+		super(name, description, category, keybind);
 		this.scale = add(new NumberSetting("Scale",
 				"How big it is on screen. You can also scroll over it in the HUD editor.", 1.0D, 0.5D, 3.0D, 0.05D));
 		this.background = add(new BooleanSetting("Background", "Draw a dark box behind it.", backgroundOn));

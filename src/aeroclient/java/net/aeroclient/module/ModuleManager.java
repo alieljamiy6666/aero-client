@@ -17,6 +17,12 @@ import net.aeroclient.module.hud.PotionEffectsModule;
 import net.aeroclient.module.hud.ServerInfoModule;
 import net.aeroclient.module.hud.SpeedModule;
 import net.aeroclient.module.misc.TestModule;
+import net.aeroclient.module.pvp.ComboCounterModule;
+import net.aeroclient.module.pvp.CrosshairModule;
+import net.aeroclient.module.pvp.HitColorModule;
+import net.aeroclient.module.pvp.LowFireShieldModule;
+import net.aeroclient.module.pvp.OldAnimationsModule;
+import net.aeroclient.module.pvp.ToggleSprintModule;
 import net.minecraft.client.Minecraft;
 
 /**
@@ -42,6 +48,13 @@ public final class ModuleManager {
 		register(new SpeedModule());
 		register(new KeystrokesModule());
 		register(new CpsModule());
+		// PvP modules (fair play: visuals and comfort only)
+		register(new ToggleSprintModule());
+		register(new CrosshairModule());
+		register(new HitColorModule());
+		register(new ComboCounterModule());
+		register(new OldAnimationsModule());
+		register(new LowFireShieldModule());
 
 		AeroClient.EVENTS.subscribe(KeyEvent.class, this::onKey);
 		AeroClient.LOGGER.info("Registered " + modules.size() + " module(s)");

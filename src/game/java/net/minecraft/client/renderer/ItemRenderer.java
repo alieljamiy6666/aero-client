@@ -401,6 +401,11 @@ public class ItemRenderer {
 					GlStateManager.scale(1.0F, 1.0F, 1.0F + f6 * 0.2F);
 					GlStateManager.rotate((float) j * 45.0F, 0.0F, -1.0F, 0.0F);
 				}
+			} else if (net.aeroclient.module.pvp.OldAnimationsModule.isSwordBlocking(p_187457_1_, p_187457_4_,
+					p_187457_6_)) { // Aero Client: 1.7-style sword block pose (looks only)
+				this.transformSideFirstPerson(enumhandside, p_187457_7_);
+				this.transformFirstPerson(enumhandside, p_187457_5_);
+				net.aeroclient.module.pvp.OldAnimationsModule.applyBlockPose(flag1);
 			} else {
 				float f = -0.4F * MathHelper.sin(MathHelper.sqrt(p_187457_5_) * (float) Math.PI);
 				float f1 = 0.2F * MathHelper.sin(MathHelper.sqrt(p_187457_5_) * ((float) Math.PI * 2F));
@@ -411,6 +416,7 @@ public class ItemRenderer {
 				this.transformFirstPerson(enumhandside, p_187457_5_);
 			}
 
+			GlStateManager.translate(0.0F, -net.aeroclient.module.pvp.LowFireShieldModule.shieldOffset(p_187457_6_), 0.0F); // Aero Client: lower the shield
 			this.renderItemSide(p_187457_1_, p_187457_6_,
 					flag1 ? ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND
 							: ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND,
@@ -552,7 +558,8 @@ public class ItemRenderer {
 			float f7 = -0.5F;
 			float f8 = 0.5F;
 			float f9 = -0.5F;
-			GlStateManager.translate((float) (-(i * 2 - 1)) * 0.24F, -0.3F, 0.0F);
+			GlStateManager.translate((float) (-(i * 2 - 1)) * 0.24F,
+					-0.3F - net.aeroclient.module.pvp.LowFireShieldModule.fireOffset(), 0.0F); // Aero Client: lower fire
 			GlStateManager.rotate((float) (i * 2 - 1) * 10.0F, 0.0F, 1.0F, 0.0F);
 			bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
 			bufferbuilder.pos(-0.5D, -0.5D, -0.5D).tex((double) f2, (double) f4).endVertex();
@@ -581,6 +588,9 @@ public class ItemRenderer {
 			this.equippedProgressOffHand = MathHelper.clamp(this.equippedProgressOffHand - 0.4F, 0.0F, 1.0F);
 		} else {
 			float f = entityplayersp.getCooledAttackStrength(1.0F);
+			if (net.aeroclient.module.pvp.OldAnimationsModule.noCooldownDip()) {
+				f = 1.0F; // Aero Client: no item dip after swinging (looks only)
+			}
 			this.equippedProgressMainHand += MathHelper
 					.clamp((Objects.equals(this.itemStackMainHand, itemstack) ? f * f * f : 0.0F)
 							- this.equippedProgressMainHand, -0.4F, 0.4F);
