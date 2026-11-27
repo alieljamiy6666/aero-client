@@ -1,0 +1,65 @@
+# Aero Client: build from source on GitHub's computers.
+# Runs every time you save (push) to the main branch, or when you press
+# "Run workflow" on the Actions tab. Nothing needs to be installed on your
+# own computer.
+#
+# It runs the same three steps as the README:
+#   1. CompileEPK          -> javascript/assets.epk   (textures, sounds, etc.)
+#   2. CompileJS           -> javascript/classes.js   (the game, as JavaScript)
+#   3. MakeOfflineDownload -> one offline .html file  (the whole game in one file)
+# When it finishes, the results are saved as downloads at the bottom of the run page.
+
+name: Build Aero Client
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Pack the game assets (CompileEPK)
+        run: java -jar desktopRuntime/CompileEPK.jar desktopRuntime/resources javascript/assets.epk
+
+      - name: Turn the Java code into JavaScript (CompileJS)
+        # Same as CompileJS.sh, but with more memory, because TeaVM needs a lot
+        # to compile the whole game.
+        run: |
+          chmod +x gradlew
+          ./gradlew generateJavaScript --no-daemon "-Dorg.gradle.jvmargs=-Xmx5G -Xms2G"
+
+      - name: Make the offline HTML file (MakeOfflineDownload)
+        run: sh MakeOfflineDownload.sh
+
+      - name: Save the offline file as a download
+        uses: actions/upload-artifact@v4
+        with:
+          name: aero-client-offline
+          path: javascript/Eaglercraft_1.12_Offline_en_US.html
+          if-no-files-found: error
+
+      - name: Save the web build as a download
+        uses: actions/upload-artifact@v4
+        with:
+          name: aero-client-web
+          path: |
+            javascript/index.html
+            javascript/classes.js
+            javascript/assets.epk
+            javascript/favicon.png
+            javascript/lang/
+          if-no-files-found: error
