@@ -18,16 +18,16 @@ import net.minecraft.init.SoundEvents;
  * Almost everything takes an {@code alpha} from 0 to 1, so the whole menu can
  * fade in and out smoothly when it opens and closes.
  */
-final class Widgets {
+public final class Widgets {
 
-	static final float SWITCH_W = 18.0F, SWITCH_H = 10.0F;
+	public static final float SWITCH_W = 18.0F, SWITCH_H = 10.0F;
 	private static final int OFF_TRACK = 0xFF364152;
 
 	private Widgets() {
 	}
 
 	/** The color with its see-through-ness multiplied by {@code alpha}. */
-	static int fade(int color, float alpha) {
+	public static int fade(int color, float alpha) {
 		int a = Math.round(((color >>> 24) & 255) * Math.max(0.0F, Math.min(1.0F, alpha)));
 		return (a << 24) | (color & 0x00FFFFFF);
 	}
@@ -36,36 +36,36 @@ final class Widgets {
 	 * Text that can fade. Minecraft treats almost-invisible text colors as solid,
 	 * so text that's nearly faded out is skipped instead.
 	 */
-	static void text(FontRenderer font, String s, float x, float y, int color, float alpha) {
+	public static void text(FontRenderer font, String s, float x, float y, int color, float alpha) {
 		int c = fade(color, alpha);
 		if ((c >>> 24) >= 10) {
 			font.drawStringWithShadow(s, x, y, c);
 		}
 	}
 
-	static void textCentered(FontRenderer font, String s, float centerX, float y, int color, float alpha) {
+	public static void textCentered(FontRenderer font, String s, float centerX, float y, int color, float alpha) {
 		text(font, s, centerX - font.getStringWidth(s) / 2.0F, y, color, alpha);
 	}
 
-	static void textRight(FontRenderer font, String s, float rightX, float y, int color, float alpha) {
+	public static void textRight(FontRenderer font, String s, float rightX, float y, int color, float alpha) {
 		text(font, s, rightX - font.getStringWidth(s), y, color, alpha);
 	}
 
-	static boolean inside(float mx, float my, float x, float y, float w, float h) {
+	public static boolean inside(float mx, float my, float x, float y, float w, float h) {
 		return mx >= x && my >= y && mx < x + w && my < y + h;
 	}
 
 	/** Shows the pointing-hand mouse cursor this frame (in browsers that allow it). */
-	static void handCursor() {
+	public static void handCursor() {
 		Mouse.showCursor(EnumCursorType.HAND);
 	}
 
-	static void textCursor() {
+	public static void textCursor() {
 		Mouse.showCursor(EnumCursorType.TEXT);
 	}
 
 	/** The menu's soft click. A higher {@code pitch} for "on", lower for "off". */
-	static void click(float pitch) {
+	public static void click(float pitch) {
 		Minecraft mc = Minecraft.getMinecraft();
 		if (mc != null && mc.getSoundHandler() != null) {
 			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, pitch));
@@ -76,7 +76,7 @@ final class Widgets {
 	 * An on/off switch. {@code on} goes from 0 (off) to 1 (on) and can be in
 	 * between while it slides; {@code hover} makes it a little brighter.
 	 */
-	static void drawSwitch(float x, float y, float on, float hover, float alpha) {
+	public static void drawSwitch(float x, float y, float on, float hover, float alpha) {
 		int track = Theme.mix(OFF_TRACK, Theme.accent, on);
 		track = Theme.mix(track, 0xFFFFFFFF, 0.08F * hover);
 		if (on > 0.01F) {
@@ -94,7 +94,7 @@ final class Widgets {
 	 * graphics chips. While it's fading, everything is drawn whole so it still
 	 * looks right when see-through.
 	 */
-	static void panel(float x, float y, float w, float h, float r, int border, int top, int bottom, float shadow,
+	public static void panel(float x, float y, float w, float h, float r, int border, int top, int bottom, float shadow,
 			int glow, float alpha) {
 		boolean solid = alpha >= 0.99F;
 		if ((glow >>> 24) > 0) {
@@ -121,7 +121,7 @@ final class Widgets {
 	}
 
 	/** A dark box with a description, drawn next to the mouse and kept on screen. */
-	static void tooltip(FontRenderer font, String text, int mouseX, int mouseY, int screenW, int screenH, boolean below,
+	public static void tooltip(FontRenderer font, String text, int mouseX, int mouseY, int screenW, int screenH, boolean below,
 			float alpha) {
 		if (text == null || text.isEmpty() || alpha <= 0.02F) {
 			return;

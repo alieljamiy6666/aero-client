@@ -11,6 +11,7 @@ import net.aeroclient.gui.AeroBranding;
 import net.aeroclient.gui.AeroMenuBackground;
 import net.aeroclient.gui.AeroProfilesScreen;
 import net.aeroclient.gui.AeroSettingsScreen;
+import net.aeroclient.gui.HudEditorScreen;
 import net.aeroclient.module.Category;
 import net.aeroclient.module.Module;
 import net.aeroclient.theme.Animation;
@@ -133,6 +134,13 @@ public class ClickGuiScreen extends GuiScreen {
 	/** Opens the menu on top of {@code parent} (null = back to the game when it closes). */
 	public static void open(GuiScreen parent) {
 		Minecraft.getMinecraft().displayGuiScreen(new ClickGuiScreen(parent));
+	}
+
+	/** Opens the menu with one module's settings already showing (used by the HUD editor's right-click). */
+	public static void openSettings(GuiScreen parent, Module module) {
+		ClickGuiScreen gui = new ClickGuiScreen(parent);
+		gui.panel.open(module);
+		Minecraft.getMinecraft().displayGuiScreen(gui);
 	}
 
 	/** Makes Right Shift open the menu while playing. Called once at startup. */
@@ -717,7 +725,7 @@ public class ClickGuiScreen extends GuiScreen {
 	private void headerButton(int index) {
 		switch (index) {
 		case BTN_HUD:
-			showToast("The HUD editor is coming soon");
+			this.mc.displayGuiScreen(new HudEditorScreen(this));
 			break;
 		case BTN_PROFILES:
 			this.mc.displayGuiScreen(new AeroProfilesScreen(this));

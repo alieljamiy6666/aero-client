@@ -15,6 +15,7 @@ import net.aeroclient.event.TickEvent;
 import net.aeroclient.gui.AeroButtonStyle;
 import net.aeroclient.gui.AeroMainMenu;
 import net.aeroclient.gui.AeroMenuBackground;
+import net.aeroclient.gui.HudEditorScreen;
 import net.aeroclient.module.Module;
 import net.aeroclient.module.setting.Setting;
 import net.aeroclient.theme.Theme;
@@ -130,6 +131,7 @@ public final class ConfigManager {
 		client.put("roundedButtons", AeroButtonStyle.enabled);
 		client.put("animatedBackground", AeroMenuBackground.animated);
 		client.put("classicMenu", AeroMainMenu.classicMode);
+		client.put("hudSnapping", HudEditorScreen.snapping);
 		return client;
 	}
 
@@ -268,6 +270,10 @@ public final class ConfigManager {
 		Object classic = client.opt("classicMenu");
 		if (classic instanceof Boolean) {
 			AeroMainMenu.classicMode = (Boolean) classic;
+		}
+		Object snapping = client.opt("hudSnapping");
+		if (snapping instanceof Boolean) {
+			HudEditorScreen.snapping = (Boolean) snapping;
 		}
 	}
 

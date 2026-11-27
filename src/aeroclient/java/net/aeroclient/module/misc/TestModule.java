@@ -2,18 +2,15 @@ package net.aeroclient.module.misc;
 
 import net.aeroclient.event.ChatReceiveEvent;
 import net.aeroclient.event.KeyEvent;
-import net.aeroclient.event.Render2DEvent;
 import net.aeroclient.event.Render3DEvent;
 import net.aeroclient.event.ServerJoinEvent;
 import net.aeroclient.event.TickEvent;
 import net.aeroclient.event.WorldLoadEvent;
-import net.aeroclient.module.Category;
-import net.aeroclient.module.Module;
+import net.aeroclient.hud.Anchor;
+import net.aeroclient.hud.HudModule;
 import net.aeroclient.module.setting.BooleanSetting;
 import net.aeroclient.module.setting.ColorSetting;
 import net.aeroclient.module.setting.KeybindSetting;
-import net.aeroclient.module.setting.ModeSetting;
-import net.aeroclient.module.setting.NumberSetting;
 import net.aeroclient.theme.Theme;
 import net.aeroclient.util.RenderUtil;
 import net.lax1dude.eaglercraft.Keyboard;
@@ -21,21 +18,18 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.text.TextComponentString;
 
 /**
- * A test module that proves the module system and every event work. Press K
- * in game to turn it on: it says so in chat and shows a small panel counting
- * ticks, 3D frames, chat messages, keys, world loads and server joins.
+ * A test module that proves the module system, events and the HUD editor
+ * work. Press K in game to turn it on: it says so in chat and shows a small
+ * panel counting ticks, 3D frames, chat messages, keys, world loads and
+ * server joins. Move and resize the panel in the HUD editor.
  *
- * It also has one setting of every kind, to test saving and the settings menu.
+ * It also has settings of several kinds, to test saving and the settings menu.
  */
-public class TestModule extends Module {
+public class TestModule extends HudModule {
 
 	private static final int KEY_K = 37;
+	private static final String TITLE = "Test Module";
 
-	private final BooleanSetting showPanel = add(new BooleanSetting("Show Panel", "Show the event counter panel.", true));
-	private final ModeSetting corner = add(
-			new ModeSetting("Corner", "Which corner the panel sits in.", "Top Left", "Top Left", "Top Right"));
-	private final NumberSetting opacity = add(
-			new NumberSetting("Opacity", "How solid the panel's background is.", 0.9D, 0.2D, 1.0D, 0.05D));
 	private final BooleanSetting showBorder = add(new BooleanSetting("Show Border", "Draw a colored border.", true));
 	private final ColorSetting borderColor = add(
 			new ColorSetting("Border Color", "The border's color.", 0xFF38BDF8, true));
@@ -45,8 +39,15 @@ public class TestModule extends Module {
 	private int ticks, frames3d, chats, worlds, joins;
 	private String lastKey = "-";
 
+	// the three text lines, rebuilt only when a number changes (not every frame)
+	private final StringBuilder sb = new StringBuilder(48);
+	private String line1 = "", line2 = "", line3 = "";
+	private int shownTicks = -1, shownFrames = -1, shownChats = -1, shownWorlds = -1, shownJoins = -1;
+	private String shownKey = null;
+
 	public TestModule() {
-		super("Test Module", "Shows that modules and events work. Toggle it with K.", Category.MISC, KEY_K);
+		super("Test Module", "Shows that modules, events and the HUD editor work. Toggle it with K.", KEY_K,
+				Anchor.TOP_LEFT, 0.008F, 0.012F);
 		listen(TickEvent.class, e -> this.ticks++);
 		listen(Render3DEvent.class, e -> this.frames3d++);
 		listen(ChatReceiveEvent.class, e -> this.chats++);
@@ -60,7 +61,6 @@ public class TestModule extends Module {
 				}
 			}
 		});
-		listen(Render2DEvent.class, this::drawPanel);
 		this.borderColor.visibleWhen(this.showBorder::isOn); // only shown while the border is on
 	}
 
@@ -82,25 +82,70 @@ public class TestModule extends Module {
 		}
 	}
 
-	private void drawPanel(Render2DEvent event) {
-		if (this.mc.gameSettings.showDebugInfo || !this.showPanel.isOn()) {
-			return; // stay out of the way of the F3 screen
+	private void updateLines() {
+		if (this.ticks != this.shownTicks || this.frames3d != this.shownFrames) {
+			this.shownTicks = this.ticks;
+			this.shownFrames = this.frames3d;
+			this.sb.setLength(0);
+			this.line1 = this.sb.append("Ticks: ").append(this.ticks).append("   3D frames: ").append(this.frames3d)
+					.toString();
 		}
+		if (this.chats != this.shownChats || this.lastKey != this.shownKey) {
+			this.shownChats = this.chats;
+			this.shownKey = this.lastKey;
+			this.sb.setLength(0);
+			this.line2 = this.sb.append("Chat: ").append(this.chats).append("   Last key: ").append(this.lastKey)
+					.toString();
+		}
+		if (this.worlds != this.shownWorlds || this.joins != this.shownJoins) {
+			this.shownWorlds = this.worlds;
+			this.shownJoins = this.joins;
+			this.sb.setLength(0);
+			this.line3 = this.sb.append("Worlds: ").append(this.worlds).append("   Joins: ").append(this.joins)
+					.toString();
+		}
+	}
+
+	@Override
+	protected float getContentWidth() {
+		updateLines();
 		FontRenderer font = this.mc.fontRendererObj;
-		String line1 = "Ticks: " + this.ticks + "   3D frames: " + this.frames3d;
-		String line2 = "Chat: " + this.chats + "   Last key: " + this.lastKey;
-		String line3 = "Worlds: " + this.worlds + "   Joins: " + this.joins;
-		int w = Math.max(font.getStringWidth(line1), Math.max(font.getStringWidth(line2), font.getStringWidth(line3))) + 12;
-		int h = 50;
-		int x = this.corner.is("Top Right") ? event.getWidth() - w - 4 : 4, y = 4;
-		RenderUtil.shadow(x, y + 1, w, h, 6, 5, Theme.withAlpha(0xFF000000, 0.4F));
+		return Math.max(font.getStringWidth(this.line1),
+				Math.max(font.getStringWidth(this.line2), font.getStringWidth(this.line3))) + 2;
+	}
+
+	@Override
+	protected float getContentHeight() {
+		return 41.0F;
+	}
+
+	@Override
+	protected void drawBackground(float width, float height) {
+		super.drawBackground(width, height);
 		if (this.showBorder.isOn()) {
-			RenderUtil.roundedRect(x, y, w, h, 6, this.borderColor.getColor());
+			// a 1-pixel pixel-art border drawn on top, so a see-through background stays see-through
+			int c = this.borderColor.getColor();
+			float w = width, h = height;
+			RenderUtil.beginBatch(false);
+			RenderUtil.batchRect(2, 0, w - 2, 1, c);
+			RenderUtil.batchRect(2, h - 1, w - 2, h, c);
+			RenderUtil.batchRect(0, 2, 1, h - 2, c);
+			RenderUtil.batchRect(w - 1, 2, w, h - 2, c);
+			RenderUtil.batchRect(1, 1, 2, 2, c);
+			RenderUtil.batchRect(w - 2, 1, w - 1, 2, c);
+			RenderUtil.batchRect(1, h - 2, 2, h - 1, c);
+			RenderUtil.batchRect(w - 2, h - 2, w - 1, h - 1, c);
+			RenderUtil.endBatch();
 		}
-		RenderUtil.roundedRect(x + 1, y + 1, w - 2, h - 2, 5, Theme.withAlpha(0xFF111720, this.opacity.getFloat()));
-		font.drawStringWithShadow("Test Module", x + 6, y + 5, Theme.accentLight);
-		font.drawStringWithShadow(line1, x + 6, y + 16, Theme.text);
-		font.drawStringWithShadow(line2, x + 6, y + 27, Theme.text);
-		font.drawStringWithShadow(line3, x + 6, y + 38, Theme.textFaded);
+	}
+
+	@Override
+	protected void renderContent(boolean editing) {
+		updateLines();
+		FontRenderer font = this.mc.fontRendererObj;
+		font.drawStringWithShadow(TITLE, 1, 0, Theme.accentLight);
+		font.drawStringWithShadow(this.line1, 1, 11, Theme.text);
+		font.drawStringWithShadow(this.line2, 1, 22, Theme.text);
+		font.drawStringWithShadow(this.line3, 1, 33, Theme.textFaded);
 	}
 }
