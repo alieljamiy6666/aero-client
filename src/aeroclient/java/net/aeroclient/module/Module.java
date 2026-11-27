@@ -97,6 +97,17 @@ public abstract class Module {
 		}
 	}
 
+	/**
+	 * Puts every setting and the toggle key back to default and saves, but
+	 * leaves the module on or off as it is (the menu's "Reset to defaults").
+	 */
+	public void resetSettings() {
+		for (Setting<?> s : this.settings) {
+			s.reset();
+		}
+		setKeybind(this.defaultKeybind);
+	}
+
 	/** Saves anything extra a module needs (HUD modules save their position here). */
 	public void saveExtra(JSONObject json) {
 	}
@@ -169,6 +180,11 @@ public abstract class Module {
 	/** The toggle key (a Minecraft key code), or 0 for none. */
 	public final int getKeybind() {
 		return this.keybind;
+	}
+
+	/** The toggle key this module comes with. */
+	public final int getDefaultKeybind() {
+		return this.defaultKeybind;
 	}
 
 	public final void setKeybind(int keybind) {

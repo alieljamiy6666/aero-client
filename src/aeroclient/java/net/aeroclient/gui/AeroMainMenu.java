@@ -130,6 +130,10 @@ public class AeroMainMenu extends GuiMainMenu {
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
 		if (keyCode == 20) { // T opens the theme test screen
 			this.mc.displayGuiScreen(new AeroThemeTestScreen(this));
+		} else if (keyCode == net.aeroclient.gui.clickgui.ClickGuiScreen.MENU_KEY
+				&& !net.lax1dude.eaglercraft.Keyboard.isRepeatEvent()) {
+			// Right Shift opens the module menu here too, to set things up before playing
+			net.aeroclient.gui.clickgui.ClickGuiScreen.open(this);
 		}
 	}
 

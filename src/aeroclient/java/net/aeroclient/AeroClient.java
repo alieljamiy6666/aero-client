@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import net.aeroclient.config.ConfigManager;
 import net.aeroclient.event.EventBus;
+import net.aeroclient.gui.clickgui.ClickGuiScreen;
 import net.aeroclient.module.ModuleManager;
 
 /**
@@ -54,7 +55,7 @@ public final class AeroClient {
 		try {
 			MODULES.init();
 			ConfigManager.init(); // after modules, so their saved settings can be applied
-			// Later steps add their setup here: menus...
+			ClickGuiScreen.install(); // Right Shift opens the Aero Client menu
 			LOGGER.info(NAME + " " + VERSION + " loaded");
 		} catch (Throwable t) {
 			LOGGER.error("Aero Client failed to start. The game will keep running without it.");

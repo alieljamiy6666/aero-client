@@ -41,7 +41,18 @@ public final class RenderUtil {
 	/** A rounded rectangle that fades from {@code top} color to {@code bottom} color. */
 	public static void roundedRectGradient(float x, float y, float w, float h, float r, int top, int bottom) {
 		ensureTextures();
-		nineSlice(circleTexture.getGlTextureId(), x, y, w, h, r, top, bottom, false);
+		nineSlice(circleTexture.getGlTextureId(), x, y, w, h, r, top, bottom, false, false);
+	}
+
+	/**
+	 * Only the outer ring of a rounded rectangle, without its middle. Draw a
+	 * slightly smaller filled shape on top to get a border: it looks the same
+	 * as two full shapes but skips painting the big hidden middle twice, which
+	 * helps slow graphics chips with large panels.
+	 */
+	public static void roundedRectEdge(float x, float y, float w, float h, float r, int color) {
+		ensureTextures();
+		nineSlice(circleTexture.getGlTextureId(), x, y, w, h, r, color, color, false, true);
 	}
 
 	/** A pill: a rounded rectangle whose ends are full half-circles. */
@@ -61,25 +72,46 @@ public final class RenderUtil {
 	public static void glow(float x, float y, float w, float h, float r, float size, int color) {
 		ensureTextures();
 		nineSlice(glowTexture.getGlTextureId(), x - size, y - size, w + size * 2.0F, h + size * 2.0F, r + size,
-				color, color, true);
+				color, color, true, false);
+	}
+
+	/** Like {@link #glow}, but skips the part hidden under the shape (use it under solid shapes). */
+	public static void glowOuter(float x, float y, float w, float h, float r, float size, int color) {
+		ensureTextures();
+		nineSlice(glowTexture.getGlTextureId(), x - size, y - size, w + size * 2.0F, h + size * 2.0F, r + size,
+				color, color, true, true);
 	}
 
 	/** A soft shadow around a rounded rectangle (it darkens what's behind). */
 	public static void shadow(float x, float y, float w, float h, float r, float size, int color) {
 		ensureTextures();
 		nineSlice(glowTexture.getGlTextureId(), x - size, y - size, w + size * 2.0F, h + size * 2.0F, r + size,
-				color, color, false);
+				color, color, false, false);
 	}
 
+	/** Like {@link #shadow}, but skips the part hidden under the shape (use it under solid shapes). */
+	public static void shadowOuter(float x, float y, float w, float h, float r, float size, int color) {
+		ensureTextures();
+		nineSlice(glowTexture.getGlTextureId(), x - size, y - size, w + size * 2.0F, h + size * 2.0F, r + size,
+				color, color, false, true);
+	}
+
+	// reused every call, so drawing shapes doesn't create garbage each frame
+	private static final float[] XS = new float[4], YS = new float[4];
+	private static final float[] UV = { 0.0F, 0.5F, 0.5F, 1.0F };
+	private static final float BIG_CENTER = 1600.0F; // GUI units squared
+
 	private static void nineSlice(int textureId, float x, float y, float w, float h, float corner, int top,
-			int bottom, boolean additive) {
+			int bottom, boolean additive, boolean skipCenter) {
 		if (w <= 0.0F || h <= 0.0F) {
 			return;
 		}
 		corner = Math.max(0.0F, Math.min(corner, Math.min(w, h) / 2.0F));
-		float[] xs = { x, x + corner, x + w - corner, x + w };
-		float[] ys = { y, y + corner, y + h - corner, y + h };
-		float[] uv = { 0.0F, 0.5F, 0.5F, 1.0F };
+		XS[0] = x; XS[1] = x + corner; XS[2] = x + w - corner; XS[3] = x + w;
+		YS[0] = y; YS[1] = y + corner; YS[2] = y + h - corner; YS[3] = y + h;
+		// The middle piece is one flat color, so a big middle is drawn without the
+		// texture afterwards: same look, much less work for slow graphics.
+		boolean plainCenter = !skipCenter && (XS[2] - XS[1]) * (YS[2] - YS[1]) > BIG_CENTER;
 
 		beginState(true, additive);
 		GlStateManager.bindTexture(textureId);
@@ -87,19 +119,30 @@ public final class RenderUtil {
 		wr.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
 		for (int row = 0; row < 3; row++) {
 			for (int col = 0; col < 3; col++) {
-				float x0 = xs[col], x1 = xs[col + 1], y0 = ys[row], y1 = ys[row + 1];
-				if (x1 <= x0 || y1 <= y0) {
+				float x0 = XS[col], x1 = XS[col + 1], y0 = YS[row], y1 = YS[row + 1];
+				if (x1 <= x0 || y1 <= y0 || (row == 1 && col == 1 && (skipCenter || plainCenter))) {
 					continue;
 				}
 				int c0 = Theme.mix(top, bottom, (y0 - y) / h);
 				int c1 = Theme.mix(top, bottom, (y1 - y) / h);
-				vertex(wr, x0, y1, uv[col], uv[row + 1], c1);
-				vertex(wr, x1, y1, uv[col + 1], uv[row + 1], c1);
-				vertex(wr, x1, y0, uv[col + 1], uv[row], c0);
-				vertex(wr, x0, y0, uv[col], uv[row], c0);
+				vertex(wr, x0, y1, UV[col], UV[row + 1], c1);
+				vertex(wr, x1, y1, UV[col + 1], UV[row + 1], c1);
+				vertex(wr, x1, y0, UV[col + 1], UV[row], c0);
+				vertex(wr, x0, y0, UV[col], UV[row], c0);
 			}
 		}
 		Tessellator.getInstance().draw();
+		if (plainCenter) {
+			int c0 = Theme.mix(top, bottom, (YS[1] - y) / h);
+			int c1 = Theme.mix(top, bottom, (YS[2] - y) / h);
+			GlStateManager.disableTexture2D();
+			wr.begin(7, DefaultVertexFormats.POSITION_COLOR);
+			colorVertex(wr, XS[1], YS[2], c1);
+			colorVertex(wr, XS[2], YS[2], c1);
+			colorVertex(wr, XS[2], YS[1], c0);
+			colorVertex(wr, XS[1], YS[1], c0);
+			Tessellator.getInstance().draw();
+		}
 		endState();
 	}
 
@@ -184,6 +227,91 @@ public final class RenderUtil {
 		batching = false;
 		Tessellator.getInstance().draw();
 		endState();
+	}
+
+	// ---------------- clipping (hide what's outside a box) ----------------
+
+	private static final int GL_ALWAYS = 519;
+	private static final int GL_LEQUAL = 515;
+	private static final int GL_DEPTH_BUFFER_BIT = 256;
+	private static final double CLIP_Z = 950.0D; // closer to the screen than normal GUI drawing
+	private static final float FAR = 100000.0F;
+	private static final int MAX_CLIPS = 8;
+	private static final float[] clipStack = new float[MAX_CLIPS * 4];
+	private static int clipCount = 0;
+
+	/**
+	 * Hides everything drawn outside the box from (x0, y0) to (x1, y1) until
+	 * {@link #popClip()}. Clips can be nested: the inner box is cut down to fit
+	 * inside the outer one.
+	 *
+	 * The browser version has no "scissor" support here, so this uses the depth
+	 * buffer: invisible walls are drawn around the box, closer to the screen
+	 * than the GUI, and anything behind them is skipped.
+	 */
+	public static void pushClip(float x0, float y0, float x1, float y1) {
+		if (clipCount > 0) {
+			int top = (clipCount - 1) * 4;
+			x0 = Math.max(x0, clipStack[top]);
+			y0 = Math.max(y0, clipStack[top + 1]);
+			x1 = Math.min(x1, clipStack[top + 2]);
+			y1 = Math.min(y1, clipStack[top + 3]);
+		}
+		if (clipCount < MAX_CLIPS) {
+			int i = clipCount * 4;
+			clipStack[i] = x0;
+			clipStack[i + 1] = y0;
+			clipStack[i + 2] = x1;
+			clipStack[i + 3] = Math.max(y0, y1);
+		}
+		clipCount++;
+		applyClip();
+	}
+
+	/** Goes back to the clip before the last {@link #pushClip}, or to no clip at all. */
+	public static void popClip() {
+		if (clipCount <= 0) {
+			return;
+		}
+		clipCount--;
+		if (clipCount > 0) {
+			applyClip();
+		} else {
+			GlStateManager.clear(GL_DEPTH_BUFFER_BIT); // wipe the invisible walls
+			GlStateManager.depthFunc(GL_LEQUAL);
+			GlStateManager.disableDepth();
+		}
+	}
+
+	private static void applyClip() {
+		int i = Math.min(clipCount, MAX_CLIPS) * 4 - 4;
+		float x0 = clipStack[i], y0 = clipStack[i + 1], x1 = clipStack[i + 2], y1 = clipStack[i + 3];
+		GlStateManager.clear(GL_DEPTH_BUFFER_BIT);
+		GlStateManager.colorMask(false, false, false, false);
+		GlStateManager.enableDepth();
+		GlStateManager.depthMask(true);
+		GlStateManager.depthFunc(GL_ALWAYS);
+		GlStateManager.disableTexture2D();
+		WorldRenderer wr = Tessellator.getInstance().getBuffer();
+		wr.begin(7, DefaultVertexFormats.POSITION);
+		clipWall(wr, -FAR, -FAR, FAR, y0); // above
+		clipWall(wr, -FAR, y1, FAR, FAR); // below
+		clipWall(wr, -FAR, y0, x0, y1); // left
+		clipWall(wr, x1, y0, FAR, y1); // right
+		Tessellator.getInstance().draw();
+		GlStateManager.enableTexture2D();
+		GlStateManager.colorMask(true, true, true, true);
+		GlStateManager.depthFunc(GL_LEQUAL);
+	}
+
+	private static void clipWall(WorldRenderer wr, float x0, float y0, float x1, float y1) {
+		if (x1 <= x0 || y1 <= y0) {
+			return;
+		}
+		wr.pos(x0, y1, CLIP_Z).endVertex();
+		wr.pos(x1, y1, CLIP_Z).endVertex();
+		wr.pos(x1, y0, CLIP_Z).endVertex();
+		wr.pos(x0, y0, CLIP_Z).endVertex();
 	}
 
 	// ---------------- internals ----------------

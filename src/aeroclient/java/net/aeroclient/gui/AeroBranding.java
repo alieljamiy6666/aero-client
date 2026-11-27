@@ -102,6 +102,25 @@ public final class AeroBranding {
 		GlStateManager.disableBlend();
 	}
 
+	/**
+	 * Draws just the "A" badge from the logo (the same art, not changed), with
+	 * its top-left corner at (x, y), {@code size} GUI units wide and tall.
+	 * Used in the corner of the Right Shift menu.
+	 */
+	public static void drawEmblem(Minecraft mc, int x, int y, int size, float alpha) {
+		if (alpha <= 0.02F) {
+			return;
+		}
+		mc.getTextureManager().bindTexture(LOGO);
+		GlStateManager.enableBlend();
+		GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, alpha);
+		Gui.drawScaledCustomSizeModalRect(x, y, EMBLEM[0], EMBLEM[1], EMBLEM[2], EMBLEM[3], size, size, TEXTURE_SIZE,
+				TEXTURE_SIZE);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		GlStateManager.disableBlend();
+	}
+
 	private static void drawPart(int[] part, int x, int y, int scale) {
 		Gui.drawScaledCustomSizeModalRect(x, y, part[0], part[1], part[2], part[3], part[2] * scale,
 				part[3] * scale, TEXTURE_SIZE, TEXTURE_SIZE);

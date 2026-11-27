@@ -58,5 +58,16 @@ public final class Animation {
 			progress = clamp01(progress + (on ? step : -step));
 			return easeInOut(progress);
 		}
+
+		/** Jumps straight to fully on or fully off, with no animation. */
+		public void snap(boolean on) {
+			progress = on ? 1.0F : 0.0F;
+			lastTime = -1L;
+		}
+
+		/** The current eased value, without moving it. */
+		public float get() {
+			return easeInOut(progress);
+		}
 	}
 }
