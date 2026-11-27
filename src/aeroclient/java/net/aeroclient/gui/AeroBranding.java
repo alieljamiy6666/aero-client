@@ -1,6 +1,7 @@
 package net.aeroclient.gui;
 
 import net.aeroclient.AeroClient;
+import net.aeroclient.theme.Theme;
 import net.lax1dude.eaglercraft.opengl.GlStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -16,8 +17,7 @@ import net.minecraft.util.math.MathHelper;
  * that holds several parts: the "AERO CLIENT" wordmark, the "A" badge, and
  * white masks used for the shine effect.
  *
- * The colors here are temporary. Step 4 moves them into the Theme class so
- * every screen shares one set of colors.
+ * Colors come from {@link Theme}, so the whole client stays consistent.
  */
 public final class AeroBranding {
 
@@ -48,14 +48,6 @@ public final class AeroBranding {
 	private static final long SHINE_SWEEP_MS = 900L; // ...and takes 0.9 seconds to cross
 	private static final float SHINE_HALF_WIDTH = 4.0F; // in art pixels
 	private static final float SHINE_STRENGTH = 0.55F;
-
-	/** Colors, as 0xAARRGGBB. */
-	public static final int BACKGROUND = 0xFF0E1116;
-	public static final int PANEL = 0xFF1F2630;
-	public static final int ACCENT = 0xFF38BDF8;
-	public static final int ACCENT_LIGHT = 0xFF7DD3FC;
-	public static final int TEXT = 0xFFE5E7EB;
-	public static final int TEXT_FADED = 0xFF8B949E;
 
 	/** Credit for the Eaglercraft 1.12 port that Aero Client is built on. */
 	public static final String CREDIT_LINE = "Based on Eaglercraft 1.12 by PeytonPlayz595";
@@ -164,7 +156,7 @@ public final class AeroBranding {
 
 	/** Bottom-left of the title screen: "Aero Client v1.0.0" and the port credit. */
 	public static void drawVersionText(FontRenderer font, int screenHeight) {
-		font.drawStringWithShadow(AeroClient.getDisplayName(), 2, screenHeight - 20, ACCENT_LIGHT);
+		font.drawStringWithShadow(AeroClient.getDisplayName(), 2, screenHeight - 20, Theme.accentLight);
 		font.drawStringWithShadow(CREDIT_LINE, 2, screenHeight - 10, 0xFFB0B0B0);
 	}
 
@@ -195,13 +187,13 @@ public final class AeroBranding {
 	 */
 	public static void drawLoadingBar(int x, int y, int width, int height, float progress) {
 		progress = Math.max(0.0F, Math.min(1.0F, progress));
-		drawPill(x, y, width, height, PANEL);
+		drawPill(x, y, width, height, 0xFF1F2630);
 		int fill = Math.round(width * progress);
 		if (fill < 2) {
 			return;
 		}
-		drawPill(x, y, fill, height, ACCENT);
-		Gui.drawRect(x + 1, y + 1, x + fill - 1, y + 2, ACCENT_LIGHT); // shine along the top
+		drawPill(x, y, fill, height, Theme.accent);
+		Gui.drawRect(x + 1, y + 1, x + fill - 1, y + 2, Theme.accentLight); // shine along the top
 		int tip = x + fill;
 		Gui.drawRect(tip - 4, y - 2, tip + 3, y + height + 2, 0x2638BDF8); // outer glow
 		Gui.drawRect(tip - 3, y - 1, tip + 2, y + height + 1, 0x4D7DD3FC); // inner glow

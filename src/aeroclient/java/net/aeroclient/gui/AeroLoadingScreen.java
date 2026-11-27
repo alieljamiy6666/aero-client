@@ -1,6 +1,7 @@
 package net.aeroclient.gui;
 
 import net.aeroclient.AeroClient;
+import net.aeroclient.theme.Theme;
 import net.lax1dude.eaglercraft.opengl.GlStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -99,7 +100,7 @@ public final class AeroLoadingScreen {
 		GlStateManager.enableAlpha();
 		GlStateManager.alphaFunc(516, 0.1F);
 
-		Gui.drawRect(0, 0, width, height, AeroBranding.BACKGROUND);
+		Gui.drawRect(0, 0, width, height, Theme.background);
 
 		FontRenderer font = mc.fontRendererObj; // not ready during the first moments of loading
 		int scale = AeroBranding.pickLogoScale(width, height);
@@ -118,7 +119,7 @@ public final class AeroLoadingScreen {
 		if (font != null) {
 			String text = status + "...  " + Math.round(Math.max(0.0F, Math.min(1.0F, shownProgress)) * 100.0F) + "%";
 			font.drawStringWithShadow(text, (width - font.getStringWidth(text)) / 2.0F, barY + barH + 7,
-					AeroBranding.TEXT_FADED);
+					Theme.textFaded);
 		}
 
 		// Put things back the way the game expects them, then show the frame.

@@ -185,9 +185,11 @@ public class GuiMainMenu extends GuiScreen {
 			this.addSingleplayerMultiplayerButtons(j, 24);
 		}
 
-		this.buttonList.add(new GuiButton(0, this.width / 2 - 100, j + 72 + 12, 98, 20, I18n.format("menu.options")));
-		this.buttonList.add(new GuiButton(4, this.width / 2 + 2, j + 72 + 12, 98, 20, I18n.format("Edit Profile")));
-		this.buttonList.add(new GuiButtonLanguage(5, this.width / 2 - 124, j + 72 + 12));
+		// Aero Client: rounded Aero buttons instead of the vanilla ones (same ids, so clicks work the same)
+		this.buttonList.add(new net.aeroclient.gui.AeroButton(0, this.width / 2 - 100, j + 72 + 12, 98, 20, I18n.format("menu.options")));
+		this.buttonList.add(new net.aeroclient.gui.AeroButton(4, this.width / 2 + 2, j + 72 + 12, 98, 20, I18n.format("Edit Profile")));
+		this.buttonList.add(new net.aeroclient.gui.AeroButton(5, this.width / 2 - 124, j + 72 + 12, 20, 20, "",
+				net.aeroclient.gui.AeroButton.ICON_GLOBE));
 	}
 
 	/**
@@ -195,20 +197,22 @@ public class GuiMainMenu extends GuiScreen {
 	 * bought the game.
 	 */
 	private void addSingleplayerMultiplayerButtons(int p_73969_1_, int p_73969_2_) {
-		this.buttonList.add(new GuiButton(1, this.width / 2 - 100, p_73969_1_, I18n.format("menu.singleplayer")));
+		// Aero Client: rounded Aero buttons
+		this.buttonList.add(new net.aeroclient.gui.AeroButton(1, this.width / 2 - 100, p_73969_1_, I18n.format("menu.singleplayer")));
 		this.buttonList.add(
-				new GuiButton(2, this.width / 2 - 100, p_73969_1_ + p_73969_2_ * 1, I18n.format("menu.multiplayer")));
+				new net.aeroclient.gui.AeroButton(2, this.width / 2 - 100, p_73969_1_ + p_73969_2_ * 1, I18n.format("menu.multiplayer")));
 		this.buttonList
-				.add(new GuiButton(14, this.width / 2 - 100, p_73969_1_ + p_73969_2_ * 2, I18n.format("menu.credits")));
+				.add(new net.aeroclient.gui.AeroButton(14, this.width / 2 - 100, p_73969_1_ + p_73969_2_ * 2, I18n.format("menu.credits")));
 	}
 
 	/**
 	 * Adds Demo buttons on Main Menu for players who are playing Demo.
 	 */
 	private void addDemoButtons(int p_73972_1_, int p_73972_2_) {
-		this.buttonList.add(new GuiButton(11, this.width / 2 - 100, p_73972_1_, I18n.format("menu.playdemo")));
+		// Aero Client: rounded Aero buttons
+		this.buttonList.add(new net.aeroclient.gui.AeroButton(11, this.width / 2 - 100, p_73972_1_, I18n.format("menu.playdemo")));
 		this.buttonResetDemo = this.addButton(
-				new GuiButton(12, this.width / 2 - 100, p_73972_1_ + p_73972_2_ * 1, I18n.format("menu.resetdemo")));
+				new net.aeroclient.gui.AeroButton(12, this.width / 2 - 100, p_73972_1_ + p_73972_2_ * 1, I18n.format("menu.resetdemo")));
 		ISaveFormat isaveformat = this.mc.getSaveLoader();
 		WorldInfo worldinfo = isaveformat.getWorldInfo("Demo_World");
 
@@ -452,14 +456,8 @@ public class GuiMainMenu extends GuiScreen {
 	 */
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		this.panoramaTimer += partialTicks;
-		GlStateManager.disableAlpha();
-		this.renderSkybox(mouseX, mouseY, partialTicks);
-		GlStateManager.enableAlpha();
-		int i = 274;
-		int j = this.width / 2 - 137;
-		int k = 30;
-		this.drawGradientRect(0, 0, this.width, this.height, -2130706433, 16777215);
-		this.drawGradientRect(0, 0, this.width, this.height, 0, Integer.MIN_VALUE);
+		// Aero Client: animated night-sky background instead of the spinning panorama
+		net.aeroclient.gui.AeroMenuBackground.draw(this.mc, this.width, this.height, mouseX, mouseY);
 		// Aero Client: draw the animated Aero Client logo instead of the Minecraft title and "Java Edition"
 		net.aeroclient.gui.AeroBranding.drawTitleLogo(this.mc, this.width, this.height);
 
