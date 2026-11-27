@@ -2,6 +2,7 @@ package net.aeroclient.gui;
 
 import java.io.IOException;
 
+import net.aeroclient.config.ConfigManager;
 import net.aeroclient.theme.Animation;
 import net.aeroclient.theme.Theme;
 import net.aeroclient.util.RenderUtil;
@@ -13,11 +14,11 @@ import net.minecraft.client.gui.GuiScreen;
  * Aero Client's own settings: the accent color, the rounded button style and
  * the animated background (turn it off on slow computers).
  *
- * For now these reset when the page reloads. Step 7 adds saving.
+ * Changes are saved automatically and kept after the page reloads.
  */
 public class AeroSettingsScreen extends GuiScreen {
 
-	private static final int ID_BUTTONS = 1, ID_BACKGROUND = 2, ID_PREVIEW = 3, ID_DONE = 4;
+	private static final int ID_BUTTONS = 1, ID_BACKGROUND = 2, ID_PREVIEW = 3, ID_DONE = 4, ID_PROFILES = 5;
 
 	private final GuiScreen parent;
 	private final Animation.Fader appear = new Animation.Fader(300.0F);
@@ -43,7 +44,8 @@ public class AeroSettingsScreen extends GuiScreen {
 		int y = (int) this.panelY + 82;
 		this.buttonList.add(new GuiButton(ID_BUTTONS, cx - 100, y, 200, 20, buttonsLabel()));
 		this.buttonList.add(new GuiButton(ID_BACKGROUND, cx - 100, y + 24, 200, 20, backgroundLabel()));
-		this.buttonList.add(new GuiButton(ID_PREVIEW, cx - 100, y + 48, 200, 20, "Theme Preview..."));
+		this.buttonList.add(new GuiButton(ID_PROFILES, cx - 100, y + 48, 98, 20, "Profiles..."));
+		this.buttonList.add(new GuiButton(ID_PREVIEW, cx + 2, y + 48, 98, 20, "Theme Preview..."));
 		this.buttonList.add(new GuiButton(ID_DONE, cx - 100, (int) (this.panelY + this.panelH) + 10, 200, 20, "Done"));
 	}
 
@@ -61,10 +63,15 @@ public class AeroSettingsScreen extends GuiScreen {
 		case ID_BUTTONS:
 			AeroButtonStyle.enabled = !AeroButtonStyle.enabled;
 			button.displayString = buttonsLabel();
+			ConfigManager.markDirty();
 			break;
 		case ID_BACKGROUND:
 			AeroMenuBackground.animated = !AeroMenuBackground.animated;
 			button.displayString = backgroundLabel();
+			ConfigManager.markDirty();
+			break;
+		case ID_PROFILES:
+			this.mc.displayGuiScreen(new AeroProfilesScreen(this));
 			break;
 		case ID_PREVIEW:
 			this.mc.displayGuiScreen(new AeroThemeTestScreen(this));
@@ -105,6 +112,7 @@ public class AeroSettingsScreen extends GuiScreen {
 		int i = swatchAt(mouseX, mouseY);
 		if (mouseButton == 0 && i >= 0) {
 			Theme.setAccent(Theme.ACCENT_COLORS[i]);
+			ConfigManager.markDirty();
 			this.mc.getSoundHandler().playSound(net.minecraft.client.audio.PositionedSoundRecord
 					.getMasterRecord(net.minecraft.init.SoundEvents.UI_BUTTON_CLICK, 1.0F));
 		}
@@ -143,7 +151,7 @@ public class AeroSettingsScreen extends GuiScreen {
 		String name = hovered >= 0 ? Theme.ACCENT_NAMES[hovered] : (selected >= 0 ? Theme.ACCENT_NAMES[selected] : "Custom");
 		TextUtil.drawCentered(this.fontRendererObj, name, this.width / 2.0F, swatchY() + (py - this.panelY) + 15, Theme.text);
 
-		TextUtil.drawCentered(this.fontRendererObj, "Settings reset on reload for now", this.width / 2.0F,
+		TextUtil.drawCentered(this.fontRendererObj, "Profile: " + ConfigManager.getActiveProfile() + "  -  saved automatically", this.width / 2.0F,
 				py + this.panelH - 13, Theme.withAlpha(Theme.textFaded, 0.8F * a));
 		TextUtil.drawCentered(this.fontRendererObj,
 				net.aeroclient.AeroClient.getDisplayName() + " - Made by " + net.aeroclient.AeroClient.AUTHOR,

@@ -46,6 +46,7 @@ public class AeroThemeTestScreen extends GuiScreen {
 		if (button.id == ID_ACCENT) {
 			int next = (Theme.accentPresetIndex() + 1) % Theme.ACCENT_COLORS.length;
 			Theme.setAccent(Theme.ACCENT_COLORS[next]);
+			net.aeroclient.config.ConfigManager.markDirty();
 			button.displayString = accentLabel();
 		} else if (button.id == ID_DONE) {
 			this.mc.displayGuiScreen(this.parent);

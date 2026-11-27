@@ -1,11 +1,16 @@
 package net.aeroclient.module;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.json.JSONObject;
+
 import net.aeroclient.AeroClient;
+import net.aeroclient.config.ConfigManager;
 import net.aeroclient.event.Event;
 import net.aeroclient.event.EventBus;
+import net.aeroclient.module.setting.Setting;
 import net.minecraft.client.Minecraft;
 
 /**
@@ -15,7 +20,7 @@ import net.minecraft.client.Minecraft;
  * To make a module: extend this class, pass a name, description, category and
  * default key to the constructor, and use {@link #listen} to react to game
  * events. Listeners only receive events while the module is on, so a module
- * that's off costs nothing.
+ * that's off costs nothing. Options go in settings made with {@link #add}.
  *
  * <pre>
  * public class MyModule extends Module {
@@ -35,9 +40,12 @@ public abstract class Module {
 	private final String description;
 	private final Category category;
 	private int keybind;
+	private final int defaultKeybind;
 	private boolean enabled = false;
 
 	private final List<Subscription<?>> subscriptions = new ArrayList<>();
+	private final List<Setting<?>> settings = new ArrayList<>();
+	private final List<Setting<?>> settingsView = Collections.unmodifiableList(settings);
 
 	/**
 	 * @param keybind default toggle key (a Minecraft key code, e.g. 37 for K),
@@ -51,6 +59,50 @@ public abstract class Module {
 		this.description = description;
 		this.category = category;
 		this.keybind = keybind;
+		this.defaultKeybind = keybind;
+	}
+
+	/** Adds an option to this module and returns it, e.g. {@code scale = add(new NumberSetting(...))}. */
+	protected final <S extends Setting<?>> S add(S setting) {
+		for (Setting<?> s : this.settings) {
+			if (s.getName().equalsIgnoreCase(setting.getName())) {
+				throw new IllegalArgumentException(this.name + " has two settings named " + setting.getName());
+			}
+		}
+		this.settings.add(setting);
+		return setting;
+	}
+
+	/** This module's options, in the order they were added. */
+	public final List<Setting<?>> getSettings() {
+		return this.settingsView;
+	}
+
+	/** Finds one of this module's settings by name, or null. */
+	public final Setting<?> getSetting(String name) {
+		for (Setting<?> s : this.settings) {
+			if (s.getName().equalsIgnoreCase(name)) {
+				return s;
+			}
+		}
+		return null;
+	}
+
+	/** Turns the module off and puts its key and every setting back to default (used when switching profiles). */
+	public void resetToDefaults() {
+		setEnabled(false);
+		this.keybind = this.defaultKeybind;
+		for (Setting<?> s : this.settings) {
+			s.restoreDefault();
+		}
+	}
+
+	/** Saves anything extra a module needs (HUD modules save their position here). */
+	public void saveExtra(JSONObject json) {
+	}
+
+	/** Loads what {@link #saveExtra} saved. Must cope with missing or broken values. */
+	public void loadExtra(JSONObject json) {
 	}
 
 	/** Called when the module turns on. */
@@ -75,6 +127,7 @@ public abstract class Module {
 			return;
 		}
 		this.enabled = enabled;
+		ConfigManager.markDirty();
 		try {
 			if (enabled) {
 				for (Subscription<?> sub : this.subscriptions) {
@@ -119,7 +172,10 @@ public abstract class Module {
 	}
 
 	public final void setKeybind(int keybind) {
-		this.keybind = keybind;
+		if (this.keybind != keybind) {
+			this.keybind = keybind;
+			ConfigManager.markDirty();
+		}
 	}
 
 	/** One event type + listener pair, remembered so it can be turned on and off. */

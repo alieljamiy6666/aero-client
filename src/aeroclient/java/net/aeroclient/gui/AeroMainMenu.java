@@ -118,6 +118,7 @@ public class AeroMainMenu extends GuiMainMenu {
 			break;
 		case ID_CLASSIC:
 			classicMode = true;
+			net.aeroclient.config.ConfigManager.markDirty();
 			this.mc.displayGuiScreen(new GuiMainMenu());
 			break;
 		default:

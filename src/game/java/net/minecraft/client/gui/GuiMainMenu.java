@@ -271,6 +271,7 @@ public class GuiMainMenu extends GuiScreen {
 
 		if (button.id == 303) { // Aero Client: switch back from the classic menu to the Aero menu
 			net.aeroclient.gui.AeroMainMenu.classicMode = false;
+			net.aeroclient.config.ConfigManager.markDirty();
 			this.mc.displayGuiScreen(new net.aeroclient.gui.AeroMainMenu());
 		}
 	}
