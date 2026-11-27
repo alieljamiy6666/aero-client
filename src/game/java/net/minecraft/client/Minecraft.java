@@ -538,6 +538,9 @@ public class Minecraft implements IThreadListener {
 		EaglerProfile.read();
 		ServerCookieDataStore.load();
 
+		// Aero Client: start Aero Client now that the window and resources are ready
+		net.aeroclient.AeroClient.init();
+
 		if (this.serverName != null) {
 			this.displayGuiScreen(new GuiConnecting(new GuiScreenEditProfile(new GuiMainMenu()), this, this.serverName,
 					this.serverPort));
