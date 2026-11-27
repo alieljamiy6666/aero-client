@@ -154,9 +154,11 @@ public final class AeroBranding {
 		return titleLogoY(width, height) + (LOGO_H + 1) * titleLogoScale(width, height);
 	}
 
-	/** Bottom-left of the title screen: "Aero Client v1.0.0" and the port credit. */
+	/** Bottom-left of the title screen: "Aero Client v1.0.0 by AliEljamiy6666" and the port credit. */
 	public static void drawVersionText(FontRenderer font, int screenHeight) {
-		font.drawStringWithShadow(AeroClient.getDisplayName(), 2, screenHeight - 20, Theme.accentLight);
+		String name = AeroClient.getDisplayName();
+		font.drawStringWithShadow(name, 2, screenHeight - 20, Theme.accentLight);
+		font.drawStringWithShadow(" by " + AeroClient.AUTHOR, 2 + font.getStringWidth(name), screenHeight - 20, Theme.text);
 		font.drawStringWithShadow(CREDIT_LINE, 2, screenHeight - 10, 0xFFB0B0B0);
 	}
 

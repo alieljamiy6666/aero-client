@@ -216,6 +216,11 @@ public abstract class GuiSlot {
 			// Aero Client: glass panel instead of dirt, and clip entries to the list (the sky stays visible around it)
 			boolean aero = net.aeroclient.gui.AeroButtonStyle.enabled;
 			if (aero) {
+				if (this.mc.world == null) { // some screens never draw a background and relied on the dirt
+					net.aeroclient.gui.AeroMenuBackground.drawIfMissing(this.mc,
+							this.mc.currentScreen != null ? this.mc.currentScreen.width : this.width,
+							this.mc.currentScreen != null ? this.mc.currentScreen.height : this.height);
+				}
 				net.aeroclient.gui.AeroListStyle.drawPanel(this.left, this.top, this.right, this.bottom);
 				net.aeroclient.gui.AeroListStyle.beginClip(this.top, this.bottom, this.width, this.height);
 			} else {

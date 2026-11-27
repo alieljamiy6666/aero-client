@@ -193,6 +193,7 @@ public class GuiMainMenu extends GuiScreen {
 		this.buttonList.add(new net.aeroclient.gui.AeroButton(4, this.width / 2 + 2, j + 72 + 12, 98, 20, I18n.format("Edit Profile")));
 		this.buttonList.add(new net.aeroclient.gui.AeroButton(5, this.width / 2 - 124, j + 72 + 12, 20, 20, "",
 				net.aeroclient.gui.AeroButton.ICON_GLOBE));
+		this.buttonList.add(new GuiButton(303, this.width - 86, 6, 80, 16, "Aero Menu")); // Aero Client: back to the Aero menu
 	}
 
 	/**
@@ -266,6 +267,11 @@ public class GuiMainMenu extends GuiScreen {
 
 		if (button.id == 14) {
 			this.mc.displayGuiScreen(new GuiCredits(this, "/assets/eagler/credits.txt"));
+		}
+
+		if (button.id == 303) { // Aero Client: switch back from the classic menu to the Aero menu
+			net.aeroclient.gui.AeroMainMenu.classicMode = false;
+			this.mc.displayGuiScreen(new net.aeroclient.gui.AeroMainMenu());
 		}
 	}
 

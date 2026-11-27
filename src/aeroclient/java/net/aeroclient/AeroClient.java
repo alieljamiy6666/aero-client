@@ -18,6 +18,9 @@ public final class AeroClient {
 	/** The client's version. Raise it for every release: 1.0.1, 1.1.0, and so on. */
 	public static final String VERSION = "1.0.0";
 
+	/** Who made Aero Client. */
+	public static final String AUTHOR = "AliEljamiy6666";
+
 	/** Prints messages to the browser console, tagged [AeroClient]. */
 	public static final Logger LOGGER = LogManager.getLogger("AeroClient");
 

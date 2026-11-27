@@ -789,6 +789,9 @@ public class Minecraft implements IThreadListener {
 			guiScreenIn = new GuiGameOver((ITextComponent) null);
 		}
 
+		// Aero Client: show the Aero main menu instead of the classic one (unless Classic Menu was picked)
+		guiScreenIn = net.aeroclient.gui.AeroMainMenu.replace(guiScreenIn);
+
 		if (guiScreenIn instanceof GuiMainMenu || guiScreenIn instanceof GuiMultiplayer) {
 			this.gameSettings.showDebugInfo = false;
 			this.ingameGUI.getChatGUI().clearChatMessages(true);
@@ -955,6 +958,7 @@ public class Minecraft implements IThreadListener {
 	}
 
 	public void updateDisplay() {
+		net.aeroclient.gui.AeroMenuBackground.nextFrame(); // Aero Client: count frames for the menu background
 		if (Display.isVSyncSupported()) {
 			Display.setVSync(this.gameSettings.enableVsync);
 		} else {

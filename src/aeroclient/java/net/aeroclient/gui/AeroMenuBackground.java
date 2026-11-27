@@ -21,6 +21,9 @@ import net.minecraft.util.math.MathHelper;
  */
 public final class AeroMenuBackground {
 
+	/** Turn off on slow computers: keeps the sky and hills but drops the moving parts. */
+	public static boolean animated = true;
+
 	private static final int STAR_COUNT = 150;
 	private static final int MOTE_COUNT = 46;
 
@@ -31,6 +34,24 @@ public final class AeroMenuBackground {
 	private static float smoothMouseX = 0.5F, smoothMouseY = 0.5F;
 
 	private AeroMenuBackground() {
+	}
+
+	private static int frame = 0, lastDrawnFrame = -1;
+
+	/** Called once per frame by the game, so we know whether the sky was drawn this frame. */
+	public static void nextFrame() {
+		frame++;
+	}
+
+	/**
+	 * For lists on screens that never draw a background of their own (vanilla
+	 * relied on the list's dirt to cover the screen): draws the sky if nothing
+	 * else has this frame.
+	 */
+	public static void drawIfMissing(Minecraft mc, int width, int height) {
+		if (lastDrawnFrame != frame) {
+			drawForScreen(mc, width, height);
+		}
 	}
 
 	/** Title screen version: also draws the soft glow behind the logo. */
@@ -58,7 +79,8 @@ public final class AeroMenuBackground {
 		if (stars == null) {
 			makeData();
 		}
-		float t = Animation.seconds();
+		lastDrawnFrame = frame;
+		float t = animated ? Animation.seconds() : 0.0F;
 
 		// Glide toward the mouse so the parallax feels smooth, not twitchy.
 		smoothMouseX += ((float) mouseX / Math.max(1, width) - smoothMouseX) * 0.08F;
@@ -71,12 +93,16 @@ public final class AeroMenuBackground {
 
 		drawStars(width, height, t, px, py);
 		drawMoon(width, height, px, py);
-		drawAurora(width, height, t, px);
-		drawShootingStar(width, height, t);
+		if (animated) {
+			drawAurora(width, height, t, px);
+			drawShootingStar(width, height, t);
+		}
 		drawHills(width, height, t, px, py);
-		drawMotes(width, height, t, px);
+		if (animated) {
+			drawMotes(width, height, t, px);
+		}
 
-		if (logoGlow) { // soft blue glow behind the title screen logo
+		if (logoGlow && animated) { // soft blue glow behind the title screen logo
 			int lx = AeroBranding.titleLogoX(width, height), ly = AeroBranding.titleLogoY(width, height);
 			int ls = AeroBranding.titleLogoScale(width, height);
 			RenderUtil.glow(lx + 10, ly + 6, AeroBranding.LOGO_W * ls - 20, AeroBranding.LOGO_H * ls - 12, 10, 34,
