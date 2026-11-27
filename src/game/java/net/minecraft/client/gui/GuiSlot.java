@@ -213,27 +213,34 @@ public abstract class GuiSlot {
 			GlStateManager.disableFog();
 			Tessellator tessellator = Tessellator.getInstance();
 			WorldRenderer bufferbuilder = tessellator.getBuffer();
-			this.mc.getTextureManager().bindTexture(Gui.OPTIONS_BACKGROUND);
-			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-			float f = 32.0F;
-			bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-			bufferbuilder.pos((double) this.left, (double) this.bottom, 0.0D)
-					.tex((double) ((float) this.left / 32.0F),
-							(double) ((float) (this.bottom + (int) this.amountScrolled) / 32.0F))
-					.color(32, 32, 32, 255).endVertex();
-			bufferbuilder.pos((double) this.right, (double) this.bottom, 0.0D)
-					.tex((double) ((float) this.right / 32.0F),
-							(double) ((float) (this.bottom + (int) this.amountScrolled) / 32.0F))
-					.color(32, 32, 32, 255).endVertex();
-			bufferbuilder.pos((double) this.right, (double) this.top, 0.0D)
-					.tex((double) ((float) this.right / 32.0F),
-							(double) ((float) (this.top + (int) this.amountScrolled) / 32.0F))
-					.color(32, 32, 32, 255).endVertex();
-			bufferbuilder.pos((double) this.left, (double) this.top, 0.0D)
-					.tex((double) ((float) this.left / 32.0F),
-							(double) ((float) (this.top + (int) this.amountScrolled) / 32.0F))
-					.color(32, 32, 32, 255).endVertex();
-			tessellator.draw();
+			// Aero Client: glass panel instead of dirt, and clip entries to the list (the sky stays visible around it)
+			boolean aero = net.aeroclient.gui.AeroButtonStyle.enabled;
+			if (aero) {
+				net.aeroclient.gui.AeroListStyle.drawPanel(this.left, this.top, this.right, this.bottom);
+				net.aeroclient.gui.AeroListStyle.beginClip(this.top, this.bottom, this.width, this.height);
+			} else {
+				this.mc.getTextureManager().bindTexture(Gui.OPTIONS_BACKGROUND);
+				GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+				float f = 32.0F;
+				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+				bufferbuilder.pos((double) this.left, (double) this.bottom, 0.0D)
+						.tex((double) ((float) this.left / 32.0F),
+								(double) ((float) (this.bottom + (int) this.amountScrolled) / 32.0F))
+						.color(32, 32, 32, 255).endVertex();
+				bufferbuilder.pos((double) this.right, (double) this.bottom, 0.0D)
+						.tex((double) ((float) this.right / 32.0F),
+								(double) ((float) (this.bottom + (int) this.amountScrolled) / 32.0F))
+						.color(32, 32, 32, 255).endVertex();
+				bufferbuilder.pos((double) this.right, (double) this.top, 0.0D)
+						.tex((double) ((float) this.right / 32.0F),
+								(double) ((float) (this.top + (int) this.amountScrolled) / 32.0F))
+						.color(32, 32, 32, 255).endVertex();
+				bufferbuilder.pos((double) this.left, (double) this.top, 0.0D)
+						.tex((double) ((float) this.left / 32.0F),
+								(double) ((float) (this.top + (int) this.amountScrolled) / 32.0F))
+						.color(32, 32, 32, 255).endVertex();
+				tessellator.draw();
+			}
 			int k = this.left + this.width / 2 - this.getListWidth() / 2 + 2;
 			int l = this.top + 4 - (int) this.amountScrolled;
 
@@ -242,9 +249,14 @@ public abstract class GuiSlot {
 			}
 
 			this.func_192638_a(k, l, mouseXIn, mouseYIn, partialTicks);
+			if (aero) { // Aero Client: done clipping, no dirt bands needed
+				net.aeroclient.gui.AeroListStyle.endClip();
+			}
 			GlStateManager.disableDepth();
-			this.overlayBackground(0, this.top, 255, 255);
-			this.overlayBackground(this.bottom, this.height, 255, 255);
+			if (!aero) {
+				this.overlayBackground(0, this.top, 255, 255);
+				this.overlayBackground(this.bottom, this.height, 255, 255);
+			}
 			GlStateManager.enableBlend();
 			GlStateManager.tryBlendFuncSeparate(RealOpenGLEnums.GL_SRC_ALPHA, RealOpenGLEnums.GL_ONE_MINUS_SRC_ALPHA,
 					RealOpenGLEnums.GL_ZERO, RealOpenGLEnums.GL_ONE);
@@ -283,31 +295,36 @@ public abstract class GuiSlot {
 					l1 = this.top;
 				}
 
-				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-				bufferbuilder.pos((double) i, (double) this.bottom, 0.0D).tex(0.0D, 1.0D).color(0, 0, 0, 255)
-						.endVertex();
-				bufferbuilder.pos((double) j, (double) this.bottom, 0.0D).tex(1.0D, 1.0D).color(0, 0, 0, 255)
-						.endVertex();
-				bufferbuilder.pos((double) j, (double) this.top, 0.0D).tex(1.0D, 0.0D).color(0, 0, 0, 255).endVertex();
-				bufferbuilder.pos((double) i, (double) this.top, 0.0D).tex(0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
-				tessellator.draw();
-				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-				bufferbuilder.pos((double) i, (double) (l1 + k1), 0.0D).tex(0.0D, 1.0D).color(128, 128, 128, 255)
-						.endVertex();
-				bufferbuilder.pos((double) j, (double) (l1 + k1), 0.0D).tex(1.0D, 1.0D).color(128, 128, 128, 255)
-						.endVertex();
-				bufferbuilder.pos((double) j, (double) l1, 0.0D).tex(1.0D, 0.0D).color(128, 128, 128, 255).endVertex();
-				bufferbuilder.pos((double) i, (double) l1, 0.0D).tex(0.0D, 0.0D).color(128, 128, 128, 255).endVertex();
-				tessellator.draw();
-				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-				bufferbuilder.pos((double) i, (double) (l1 + k1 - 1), 0.0D).tex(0.0D, 1.0D).color(192, 192, 192, 255)
-						.endVertex();
-				bufferbuilder.pos((double) (j - 1), (double) (l1 + k1 - 1), 0.0D).tex(1.0D, 1.0D)
-						.color(192, 192, 192, 255).endVertex();
-				bufferbuilder.pos((double) (j - 1), (double) l1, 0.0D).tex(1.0D, 0.0D).color(192, 192, 192, 255)
-						.endVertex();
-				bufferbuilder.pos((double) i, (double) l1, 0.0D).tex(0.0D, 0.0D).color(192, 192, 192, 255).endVertex();
-				tessellator.draw();
+				// Aero Client: rounded scrollbar
+				if (aero) {
+					net.aeroclient.gui.AeroListStyle.drawScrollbar(i, j, this.top, this.bottom, l1, k1);
+				} else {
+					bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+					bufferbuilder.pos((double) i, (double) this.bottom, 0.0D).tex(0.0D, 1.0D).color(0, 0, 0, 255)
+							.endVertex();
+					bufferbuilder.pos((double) j, (double) this.bottom, 0.0D).tex(1.0D, 1.0D).color(0, 0, 0, 255)
+							.endVertex();
+					bufferbuilder.pos((double) j, (double) this.top, 0.0D).tex(1.0D, 0.0D).color(0, 0, 0, 255).endVertex();
+					bufferbuilder.pos((double) i, (double) this.top, 0.0D).tex(0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
+					tessellator.draw();
+					bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+					bufferbuilder.pos((double) i, (double) (l1 + k1), 0.0D).tex(0.0D, 1.0D).color(128, 128, 128, 255)
+							.endVertex();
+					bufferbuilder.pos((double) j, (double) (l1 + k1), 0.0D).tex(1.0D, 1.0D).color(128, 128, 128, 255)
+							.endVertex();
+					bufferbuilder.pos((double) j, (double) l1, 0.0D).tex(1.0D, 0.0D).color(128, 128, 128, 255).endVertex();
+					bufferbuilder.pos((double) i, (double) l1, 0.0D).tex(0.0D, 0.0D).color(128, 128, 128, 255).endVertex();
+					tessellator.draw();
+					bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+					bufferbuilder.pos((double) i, (double) (l1 + k1 - 1), 0.0D).tex(0.0D, 1.0D).color(192, 192, 192, 255)
+							.endVertex();
+					bufferbuilder.pos((double) (j - 1), (double) (l1 + k1 - 1), 0.0D).tex(1.0D, 1.0D)
+							.color(192, 192, 192, 255).endVertex();
+					bufferbuilder.pos((double) (j - 1), (double) l1, 0.0D).tex(1.0D, 0.0D).color(192, 192, 192, 255)
+							.endVertex();
+					bufferbuilder.pos((double) i, (double) l1, 0.0D).tex(0.0D, 0.0D).color(192, 192, 192, 255).endVertex();
+					tessellator.draw();
+				}
 			}
 
 			this.renderDecorations(mouseXIn, mouseYIn);
@@ -439,27 +456,32 @@ public abstract class GuiSlot {
 			if (this.showSelectionBox && this.isSelected(j)) {
 				int i1 = this.left + (this.width / 2 - this.getListWidth() / 2);
 				int j1 = this.left + this.width / 2 + this.getListWidth() / 2;
-				GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-				GlStateManager.disableTexture2D();
-				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-				bufferbuilder.pos((double) i1, (double) (k + l + 2), 0.0D).tex(0.0D, 1.0D).color(128, 128, 128, 255)
-						.endVertex();
-				bufferbuilder.pos((double) j1, (double) (k + l + 2), 0.0D).tex(1.0D, 1.0D).color(128, 128, 128, 255)
-						.endVertex();
-				bufferbuilder.pos((double) j1, (double) (k - 2), 0.0D).tex(1.0D, 0.0D).color(128, 128, 128, 255)
-						.endVertex();
-				bufferbuilder.pos((double) i1, (double) (k - 2), 0.0D).tex(0.0D, 0.0D).color(128, 128, 128, 255)
-						.endVertex();
-				bufferbuilder.pos((double) (i1 + 1), (double) (k + l + 1), 0.0D).tex(0.0D, 1.0D).color(0, 0, 0, 255)
-						.endVertex();
-				bufferbuilder.pos((double) (j1 - 1), (double) (k + l + 1), 0.0D).tex(1.0D, 1.0D).color(0, 0, 0, 255)
-						.endVertex();
-				bufferbuilder.pos((double) (j1 - 1), (double) (k - 1), 0.0D).tex(1.0D, 0.0D).color(0, 0, 0, 255)
-						.endVertex();
-				bufferbuilder.pos((double) (i1 + 1), (double) (k - 1), 0.0D).tex(0.0D, 0.0D).color(0, 0, 0, 255)
-						.endVertex();
-				tessellator.draw();
-				GlStateManager.enableTexture2D();
+				// Aero Client: rounded highlight for the selected entry
+				if (net.aeroclient.gui.AeroButtonStyle.enabled) {
+					net.aeroclient.gui.AeroListStyle.drawSelection(i1, k - 2, j1, k + l + 2);
+				} else {
+					GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+					GlStateManager.disableTexture2D();
+					bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+					bufferbuilder.pos((double) i1, (double) (k + l + 2), 0.0D).tex(0.0D, 1.0D).color(128, 128, 128, 255)
+							.endVertex();
+					bufferbuilder.pos((double) j1, (double) (k + l + 2), 0.0D).tex(1.0D, 1.0D).color(128, 128, 128, 255)
+							.endVertex();
+					bufferbuilder.pos((double) j1, (double) (k - 2), 0.0D).tex(1.0D, 0.0D).color(128, 128, 128, 255)
+							.endVertex();
+					bufferbuilder.pos((double) i1, (double) (k - 2), 0.0D).tex(0.0D, 0.0D).color(128, 128, 128, 255)
+							.endVertex();
+					bufferbuilder.pos((double) (i1 + 1), (double) (k + l + 1), 0.0D).tex(0.0D, 1.0D).color(0, 0, 0, 255)
+							.endVertex();
+					bufferbuilder.pos((double) (j1 - 1), (double) (k + l + 1), 0.0D).tex(1.0D, 1.0D).color(0, 0, 0, 255)
+							.endVertex();
+					bufferbuilder.pos((double) (j1 - 1), (double) (k - 1), 0.0D).tex(1.0D, 0.0D).color(0, 0, 0, 255)
+							.endVertex();
+					bufferbuilder.pos((double) (i1 + 1), (double) (k - 1), 0.0D).tex(0.0D, 0.0D).color(0, 0, 0, 255)
+							.endVertex();
+					tessellator.draw();
+					GlStateManager.enableTexture2D();
+				}
 			}
 
 			this.func_192637_a(j, p_192638_1_, k, l, p_192638_3_, p_192638_4_, p_192638_5_);

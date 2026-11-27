@@ -19,7 +19,7 @@ import net.minecraft.client.gui.GuiButton;
  * POSSIBILITY OF SUCH DAMAGE.
  * 
  */
-public class GuiSlider2 extends GuiButton {
+public class GuiSlider2 extends GuiButton implements net.aeroclient.gui.AeroButtonStyle.Slider { // Aero Client: marked as a slider
 	/** The value of this slider control. */
 	public float sliderValue = 1.0F;
 	public float sliderMax = 1.0F;
@@ -69,8 +69,13 @@ public class GuiSlider2 extends GuiButton {
 
 			if(this.enabled) {
 				GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-				this.drawTexturedModalRect(this.xPosition + (int) (this.sliderValue * (float) (this.width - 8)), this.yPosition, 0, 66, 4, 20);
-				this.drawTexturedModalRect(this.xPosition + (int) (this.sliderValue * (float) (this.width - 8)) + 4, this.yPosition, 196, 66, 4, 20);
+				// Aero Client: round Aero handle (falls back to the vanilla one if the Aero style is off)
+				if (net.aeroclient.gui.AeroButtonStyle.enabled) {
+					net.aeroclient.gui.AeroButtonStyle.drawSliderKnob(this, this.sliderValue, this.height);
+				} else {
+					this.drawTexturedModalRect(this.xPosition + (int) (this.sliderValue * (float) (this.width - 8)), this.yPosition, 0, 66, 4, 20);
+					this.drawTexturedModalRect(this.xPosition + (int) (this.sliderValue * (float) (this.width - 8)) + 4, this.yPosition, 196, 66, 4, 20);
+				}
 			}
 		}
 	}

@@ -30,7 +30,28 @@ public final class Theme {
 	/** "Careful" red. */
 	public static int danger = 0xFFF87171;
 
+	/** Ready-made accent colors players can pick from. */
+	public static final String[] ACCENT_NAMES = { "Sky", "Purple", "Mint", "Pink", "Orange", "Red" };
+	public static final int[] ACCENT_COLORS = { 0xFF38BDF8, 0xFFA78BFA, 0xFF34D399, 0xFFF472B6, 0xFFFB923C,
+			0xFFF87171 };
+
 	private Theme() {
+	}
+
+	/** Changes the accent color everywhere (the light version is worked out automatically). */
+	public static void setAccent(int color) {
+		accent = color | 0xFF000000;
+		accentLight = mix(accent, 0xFFFFFFFF, 0.38F);
+	}
+
+	/** Which preset the current accent is, or -1 if it's a custom color. */
+	public static int accentPresetIndex() {
+		for (int i = 0; i < ACCENT_COLORS.length; i++) {
+			if (ACCENT_COLORS[i] == accent) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	/** The same color with a new see-through-ness (0 = invisible, 1 = solid). */

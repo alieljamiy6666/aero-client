@@ -145,6 +145,9 @@ public class GuiMainMenu extends GuiScreen {
 	 * on the key), keyCode (lwjgl Keyboard key code)
 	 */
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
+		if (keyCode == 20) { // Aero Client: T opens the theme test screen
+			this.mc.displayGuiScreen(new net.aeroclient.gui.AeroThemeTestScreen(this));
+		}
 	}
 
 	/**

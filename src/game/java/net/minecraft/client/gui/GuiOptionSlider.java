@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.util.math.MathHelper;
 
-public class GuiOptionSlider extends GuiButton {
+public class GuiOptionSlider extends GuiButton implements net.aeroclient.gui.AeroButtonStyle.Slider { // Aero Client: marked as a slider
 	private float sliderValue;
 	public boolean dragging;
 	private final GameSettings.Options options;
@@ -53,10 +53,13 @@ public class GuiOptionSlider extends GuiButton {
 
 			mc.getTextureManager().bindTexture(BUTTON_TEXTURES);
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-			this.drawTexturedModalRect(this.xPosition + (int) (this.sliderValue * (float) (this.width - 8)),
-					this.yPosition, 0, 66, 4, 20);
-			this.drawTexturedModalRect(this.xPosition + (int) (this.sliderValue * (float) (this.width - 8)) + 4,
-					this.yPosition, 196, 66, 4, 20);
+			// Aero Client: round Aero handle (falls back to the vanilla one if the Aero style is off)
+			if (net.aeroclient.gui.AeroButtonStyle.enabled) {
+				net.aeroclient.gui.AeroButtonStyle.drawSliderKnob(this, this.sliderValue, this.height);
+			} else {
+				this.drawTexturedModalRect(this.xPosition + (int) (this.sliderValue * (float) (this.width - 8)), this.yPosition, 0, 66, 4, 20);
+				this.drawTexturedModalRect(this.xPosition + (int) (this.sliderValue * (float) (this.width - 8)) + 4, this.yPosition, 196, 66, 4, 20);
+			}
 		}
 	}
 

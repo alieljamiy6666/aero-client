@@ -4,7 +4,7 @@ import net.lax1dude.eaglercraft.opengl.GlStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 
-public class GuiSlider extends GuiButton {
+public class GuiSlider extends GuiButton implements net.aeroclient.gui.AeroButtonStyle.Slider { // Aero Client: marked as a slider
 	private float sliderPosition = 1.0F;
 	public boolean isMouseDown;
 	private final String name;
@@ -77,10 +77,13 @@ public class GuiSlider extends GuiButton {
 			}
 
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-			this.drawTexturedModalRect(this.xPosition + (int) (this.sliderPosition * (float) (this.width - 8)),
-					this.yPosition, 0, 66, 4, 20);
-			this.drawTexturedModalRect(this.xPosition + (int) (this.sliderPosition * (float) (this.width - 8)) + 4,
-					this.yPosition, 196, 66, 4, 20);
+			// Aero Client: round Aero handle (falls back to the vanilla one if the Aero style is off)
+			if (net.aeroclient.gui.AeroButtonStyle.enabled) {
+				net.aeroclient.gui.AeroButtonStyle.drawSliderKnob(this, this.sliderPosition, this.height);
+			} else {
+				this.drawTexturedModalRect(this.xPosition + (int) (this.sliderPosition * (float) (this.width - 8)), this.yPosition, 0, 66, 4, 20);
+				this.drawTexturedModalRect(this.xPosition + (int) (this.sliderPosition * (float) (this.width - 8)) + 4, this.yPosition, 196, 66, 4, 20);
+			}
 		}
 	}
 

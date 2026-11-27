@@ -558,6 +558,11 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback {
 	 * Draws the background (i is always 0 as of 1.2.2)
 	 */
 	public void drawBackground(int tint) {
+		// Aero Client: the animated night sky instead of dirt (falls back to dirt if it fails)
+		if (net.aeroclient.gui.AeroButtonStyle.enabled
+				&& net.aeroclient.gui.AeroMenuBackground.drawForScreen(this.mc, this.width, this.height)) {
+			return;
+		}
 		GlStateManager.disableLighting();
 		GlStateManager.disableFog();
 		Tessellator tessellator = Tessellator.getInstance();

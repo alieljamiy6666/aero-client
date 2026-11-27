@@ -445,10 +445,15 @@ public class GuiTextField extends Gui {
 	public void drawTextBox() {
 		if (this.getVisible()) {
 			if (this.getEnableBackgroundDrawing()) {
-				drawRect(this.xPosition - 1, this.yPosition - 1, this.xPosition + this.width + 1,
-						this.yPosition + this.height + 1, -6250336);
-				drawRect(this.xPosition, this.yPosition, this.xPosition + this.width, this.yPosition + this.height,
-						-16777216);
+				if (net.aeroclient.gui.AeroButtonStyle.enabled) { // Aero Client: rounded dark box, blue border when typing
+					net.aeroclient.gui.AeroButtonStyle.drawTextFieldBox(this, this.xPosition, this.yPosition, this.width,
+							this.height, this.isFocused);
+				} else {
+					drawRect(this.xPosition - 1, this.yPosition - 1, this.xPosition + this.width + 1,
+							this.yPosition + this.height + 1, -6250336);
+					drawRect(this.xPosition, this.yPosition, this.xPosition + this.width, this.yPosition + this.height,
+							-16777216);
+				}
 			}
 
 			int i = this.isEnabled ? this.enabledColor : this.disabledColor;

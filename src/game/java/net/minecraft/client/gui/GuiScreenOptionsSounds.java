@@ -99,7 +99,7 @@ public class GuiScreenOptionsSounds extends GuiScreen {
 		return f == 0.0F ? this.offDisplayString : (int) (f * 100.0F) + "%";
 	}
 
-	class Button extends GuiButton {
+	class Button extends GuiButton implements net.aeroclient.gui.AeroButtonStyle.Slider { // Aero Client: marked as a slider
 		private final SoundCategory category;
 		private final String categoryName;
 		public float volume = 1.0F;
@@ -129,10 +129,13 @@ public class GuiScreenOptionsSounds extends GuiScreen {
 				}
 
 				GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-				this.drawTexturedModalRect(this.xPosition + (int) (this.volume * (float) (this.width - 8)),
-						this.yPosition, 0, 66, 4, 20);
-				this.drawTexturedModalRect(this.xPosition + (int) (this.volume * (float) (this.width - 8)) + 4,
-						this.yPosition, 196, 66, 4, 20);
+				// Aero Client: round Aero handle (falls back to the vanilla one if the Aero style is off)
+				if (net.aeroclient.gui.AeroButtonStyle.enabled) {
+					net.aeroclient.gui.AeroButtonStyle.drawSliderKnob(this, this.volume, this.height);
+				} else {
+					this.drawTexturedModalRect(this.xPosition + (int) (this.volume * (float) (this.width - 8)), this.yPosition, 0, 66, 4, 20);
+					this.drawTexturedModalRect(this.xPosition + (int) (this.volume * (float) (this.width - 8)) + 4, this.yPosition, 196, 66, 4, 20);
+				}
 			}
 		}
 

@@ -34,6 +34,9 @@ public class GuiButton extends Gui {
 	public boolean visible;
 	protected boolean hovered;
 
+	/** Aero Client: animation state for the rounded Aero button style. */
+	public Object aeroState;
+
 	public GuiButton(int buttonId, int x, int y, String buttonText) {
 		this(buttonId, x, y, 200, 20, buttonText);
 	}
@@ -69,6 +72,14 @@ public class GuiButton extends Gui {
 
 	public void func_191745_a(Minecraft p_191745_1_, int p_191745_2_, int p_191745_3_, float p_191745_4_) {
 		if (this.visible) {
+			// Aero Client: draw every button in the rounded Aero style
+			if (net.aeroclient.gui.AeroButtonStyle.enabled) {
+				this.hovered = net.aeroclient.gui.AeroButtonStyle.begin(this, p_191745_1_, p_191745_2_, p_191745_3_,
+						this.height);
+				this.mouseDragged(p_191745_1_, p_191745_2_, p_191745_3_); // sliders move and draw their handle here
+				net.aeroclient.gui.AeroButtonStyle.finish(this, p_191745_1_, this.height);
+				return;
+			}
 			FontRenderer fontrenderer = p_191745_1_.fontRendererObj;
 			p_191745_1_.getTextureManager().bindTexture(BUTTON_TEXTURES);
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);

@@ -5,6 +5,7 @@ import java.util.Random;
 import net.aeroclient.theme.Animation;
 import net.aeroclient.theme.Theme;
 import net.aeroclient.util.RenderUtil;
+import net.lax1dude.eaglercraft.Mouse;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.MathHelper;
 
@@ -32,7 +33,28 @@ public final class AeroMenuBackground {
 	private AeroMenuBackground() {
 	}
 
+	/** Title screen version: also draws the soft glow behind the logo. */
 	public static void draw(Minecraft mc, int width, int height, int mouseX, int mouseY) {
+		draw(mc, width, height, mouseX, mouseY, true);
+	}
+
+	/**
+	 * Background for every other menu screen (Options, Multiplayer and so on).
+	 * Returns false if something went wrong, so the screen can draw its normal
+	 * background instead.
+	 */
+	public static boolean drawForScreen(Minecraft mc, int width, int height) {
+		try {
+			int mouseX = Mouse.getX() * width / Math.max(1, mc.displayWidth);
+			int mouseY = height - Mouse.getY() * height / Math.max(1, mc.displayHeight) - 1;
+			draw(mc, width, height, mouseX, mouseY, false);
+			return true;
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
+	private static void draw(Minecraft mc, int width, int height, int mouseX, int mouseY, boolean logoGlow) {
 		if (stars == null) {
 			makeData();
 		}
@@ -54,11 +76,12 @@ public final class AeroMenuBackground {
 		drawHills(width, height, t, px, py);
 		drawMotes(width, height, t, px);
 
-		// Soft blue glow behind the logo.
-		int lx = AeroBranding.titleLogoX(width, height), ly = AeroBranding.titleLogoY(width, height);
-		int ls = AeroBranding.titleLogoScale(width, height);
-		RenderUtil.glow(lx + 10, ly + 6, AeroBranding.LOGO_W * ls - 20, AeroBranding.LOGO_H * ls - 12, 10, 34,
-				Theme.withAlpha(Theme.accent, 0.10F + 0.03F * MathHelper.sin(t * 1.3F)));
+		if (logoGlow) { // soft blue glow behind the title screen logo
+			int lx = AeroBranding.titleLogoX(width, height), ly = AeroBranding.titleLogoY(width, height);
+			int ls = AeroBranding.titleLogoScale(width, height);
+			RenderUtil.glow(lx + 10, ly + 6, AeroBranding.LOGO_W * ls - 20, AeroBranding.LOGO_H * ls - 12, 10, 34,
+					Theme.withAlpha(Theme.accent, 0.10F + 0.03F * MathHelper.sin(t * 1.3F)));
+		}
 
 		// Darker edges (a vignette) pull your eye to the middle.
 		RenderUtil.gradientV(0, 0, width, height * 0.22F, 0x66000000, 0x00000000);
