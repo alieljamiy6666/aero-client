@@ -212,7 +212,7 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 
 		if (this.mc.gameSettings.smoothCamera) {
 			float f = this.mc.gameSettings.mouseSensitivity * 0.6F + 0.2F;
-			float f1 = f * f * f * 8.0F;
+			float f1 = f * f * f * 8.0F * net.aeroclient.module.render.ZoomModule.sensitivity(); // Aero Client: slower while zoomed
 			this.smoothCamFilterX = this.mouseFilterXAxis.smooth(this.smoothCamYaw, 0.05F * f1);
 			this.smoothCamFilterY = this.mouseFilterYAxis.smooth(this.smoothCamPitch, 0.05F * f1);
 			this.smoothCamPartialTicks = 0.0F;
@@ -398,6 +398,10 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 
 			if (iblockstate.getMaterial() == Material.WATER) {
 				f = f * 60.0F / 70.0F;
+			}
+
+			if (useFOVSetting) {
+				f = net.aeroclient.module.render.ZoomModule.applyZoom(f); // Aero Client: zoom
 			}
 
 			return f;
@@ -776,7 +780,7 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 						f10 = 1.0F;
 					}
 
-					float f16 = this.mc.gameSettings.gammaSetting;
+					float f16 = net.aeroclient.module.render.FullbrightModule.gamma(this.mc.gameSettings.gammaSetting); // Aero Client: Fullbright
 					float f17 = 1.0F - f8;
 					float f13 = 1.0F - f9;
 					float f14 = 1.0F - f10;
@@ -880,7 +884,7 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 			this.mc.mouseHelper.mouseXYChange();
 			this.mc.func_193032_ao().func_193299_a(this.mc.mouseHelper);
 			float f = this.mc.gameSettings.mouseSensitivity * 0.6F + 0.2F;
-			float f1 = f * f * f * 8.0F;
+			float f1 = f * f * f * 8.0F * net.aeroclient.module.render.ZoomModule.sensitivity(); // Aero Client: slower while zoomed
 			float f2 = (float) this.mc.mouseHelper.deltaX * f1;
 			float f3 = (float) this.mc.mouseHelper.deltaY * f1;
 			int i = 1;
@@ -1772,6 +1776,11 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 
 	public static void drawNameplate(FontRenderer fontRendererIn, String str, float x, float y, float z,
 			int verticalShift, float viewerYaw, float viewerPitch, boolean isThirdPersonFrontal, boolean isSneaking) {
+		if (net.aeroclient.module.render.NametagsModule.isActive()) { // Aero Client: cleaner name tags
+			net.aeroclient.module.render.NametagsModule.draw(fontRendererIn, str, x, y, z, verticalShift, viewerYaw,
+					viewerPitch, isThirdPersonFrontal, isSneaking);
+			return;
+		}
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
 		EaglercraftGPU.glNormal3f(0.0F, 1.0F, 0.0F);

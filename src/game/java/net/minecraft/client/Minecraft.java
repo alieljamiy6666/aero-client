@@ -1701,7 +1701,7 @@ public class Minecraft implements IThreadListener {
 			if (j <= 200L) {
 				int k = Mouse.getEventDWheel();
 
-				if (k != 0) {
+				if (k != 0 && !net.aeroclient.module.render.ZoomModule.onScroll(k)) { // Aero Client: scroll to zoom
 					if (this.player.isSpectator()) {
 						k = k < 0 ? -1 : 1;
 

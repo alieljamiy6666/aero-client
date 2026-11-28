@@ -2848,6 +2848,9 @@ public abstract class World implements IBlockAccess {
 	}
 
 	public float getThunderStrength(float delta) {
+		if (this.isRemote && net.aeroclient.module.render.WeatherToggleModule.hidesWeather()) {
+			return 0.0F; // Aero Client: Weather Toggle (your screen only)
+		}
 		return (this.prevThunderingStrength + (this.thunderingStrength - this.prevThunderingStrength) * delta)
 				* this.getRainStrength(delta);
 	}
@@ -2864,6 +2867,9 @@ public abstract class World implements IBlockAccess {
 	 * Returns rain strength.
 	 */
 	public float getRainStrength(float delta) {
+		if (this.isRemote && net.aeroclient.module.render.WeatherToggleModule.hidesWeather()) {
+			return 0.0F; // Aero Client: Weather Toggle (your screen only)
+		}
 		return this.prevRainingStrength + (this.rainingStrength - this.prevRainingStrength) * delta;
 	}
 

@@ -23,6 +23,13 @@ import net.aeroclient.module.pvp.HitColorModule;
 import net.aeroclient.module.pvp.LowFireShieldModule;
 import net.aeroclient.module.pvp.OldAnimationsModule;
 import net.aeroclient.module.pvp.ToggleSprintModule;
+import net.aeroclient.module.render.BlockOutlineModule;
+import net.aeroclient.module.render.FullbrightModule;
+import net.aeroclient.module.render.NametagsModule;
+import net.aeroclient.module.render.ParticleMultiplierModule;
+import net.aeroclient.module.render.TimeChangerModule;
+import net.aeroclient.module.render.WeatherToggleModule;
+import net.aeroclient.module.render.ZoomModule;
 import net.minecraft.client.Minecraft;
 
 /**
@@ -55,6 +62,14 @@ public final class ModuleManager {
 		register(new ComboCounterModule());
 		register(new OldAnimationsModule());
 		register(new LowFireShieldModule());
+		// Render modules (how the world looks, on your screen only)
+		register(new ZoomModule());
+		register(new FullbrightModule());
+		register(new BlockOutlineModule());
+		register(new TimeChangerModule());
+		register(new WeatherToggleModule());
+		register(new ParticleMultiplierModule());
+		register(new NametagsModule());
 
 		AeroClient.EVENTS.subscribe(KeyEvent.class, this::onKey);
 		AeroClient.LOGGER.info("Registered " + modules.size() + " module(s)");

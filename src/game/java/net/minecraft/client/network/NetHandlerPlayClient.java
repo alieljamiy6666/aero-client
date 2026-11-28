@@ -1007,7 +1007,9 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 
 	public void handleTimeUpdate(SPacketTimeUpdate packetIn) {
 		this.gameController.world.setTotalWorldTime(packetIn.getTotalWorldTime());
-		this.gameController.world.setWorldTime(packetIn.getWorldTime());
+		if (net.aeroclient.module.render.TimeChangerModule.receiveServerTime(packetIn.getWorldTime())) { // Aero Client: Time Changer
+			this.gameController.world.setWorldTime(packetIn.getWorldTime());
+		}
 	}
 
 	public void handleSpawnPosition(SPacketSpawnPosition packetIn) {

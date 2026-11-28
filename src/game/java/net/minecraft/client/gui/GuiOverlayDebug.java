@@ -61,7 +61,8 @@ public class GuiOverlayDebug extends Gui {
 				drawSingleplayerStats(scaledResolutionIn);
 			}
 
-			if (this.mc.gameSettings.hudCoords && !net.aeroclient.module.hud.CoordinatesModule.hidesVanilla()) { // Aero Client: the Coordinates module replaces this line
+			if (this.mc.gameSettings.hudCoords && !net.aeroclient.module.hud.CoordinatesModule.hidesVanilla()
+					&& !net.aeroclient.module.hud.FpsModule.hidesVanilla()) { // Aero Client: Aero's FPS/Coordinates replace these lines (it would sit under the FPS box)
 				drawXYZ(2, i);
 			}
 		}

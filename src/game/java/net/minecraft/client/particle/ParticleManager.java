@@ -127,7 +127,10 @@ public class ParticleManager {
 	}
 
 	public void emitParticleAtEntity(Entity entityIn, EnumParticleTypes particleTypes) {
-		this.particleEmitters.add(new ParticleEmitter(this.worldObj, entityIn, particleTypes));
+		int count = net.aeroclient.module.render.ParticleMultiplierModule.emitterCount(particleTypes); // Aero Client
+		for (int n = 0; n < count; n++) {
+			this.particleEmitters.add(new ParticleEmitter(this.worldObj, entityIn, particleTypes));
+		}
 	}
 
 	public void func_191271_a(Entity p_191271_1_, EnumParticleTypes p_191271_2_, int p_191271_3_) {

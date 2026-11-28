@@ -9,7 +9,9 @@ import net.minecraft.client.Minecraft;
  * Shows frames per second. Optionally also the lowest and highest FPS from
  * the last 10 seconds, which shows stutters better than the current number.
  *
- * While it's on, it replaces the small built-in FPS line in the top-left corner.
+ * While it's on, it replaces the small built-in FPS and coordinates lines in
+ * the top-left corner (they'd sit under it). Turn on Coordinates to see your
+ * position.
  */
 public class FpsModule extends TextHudModule {
 

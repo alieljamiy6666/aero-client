@@ -391,7 +391,9 @@ public abstract class RenderLivingBase<T extends EntityLivingBase> extends Rende
 			}
 		}
 
-		return Minecraft.isGuiEnabled() && entity != this.renderManager.renderViewEntity && flag
-				&& !entity.isBeingRidden();
+		return Minecraft.isGuiEnabled()
+				&& (entity != this.renderManager.renderViewEntity
+						|| net.aeroclient.module.render.NametagsModule.showOwn()) // Aero Client: show own name tag
+				&& flag && !entity.isBeingRidden();
 	}
 }
