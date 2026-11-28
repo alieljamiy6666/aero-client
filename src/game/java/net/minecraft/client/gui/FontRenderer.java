@@ -248,9 +248,23 @@ public class FontRenderer implements IResourceManagerReloadListener {
 		int i = ch % 16 * 8;
 		int j = ch / 16 * 8;
 		int k = italic ? 1 : 0;
-		this.renderEngine.bindTexture(this.locationFontTexture);
+		if (!this.aeroBatching) { // Aero Client: the batch binds the texture once
+			this.renderEngine.bindTexture(this.locationFontTexture);
+		}
 		int l = this.charWidth[ch];
 		float f = (float) l - 0.01F;
+
+		if (this.aeroBatching) {
+			// Aero Client: Fast Text adds the letter to one batch for the whole string
+			WorldRenderer wr = this.aeroBatchFor(-1);
+			float u0 = (float) i / 128.0F, v0 = (float) j / 128.0F;
+			float u1 = ((float) i + f - 1.0F) / 128.0F, v1 = ((float) j + 7.99F) / 128.0F;
+			this.aeroVertex(wr, this.posX + (float) k, this.posY, u0, v0);
+			this.aeroVertex(wr, this.posX - (float) k, this.posY + 7.99F, u0, v1);
+			this.aeroVertex(wr, this.posX + f - 1.0F - (float) k, this.posY + 7.99F, u1, v1);
+			this.aeroVertex(wr, this.posX + f - 1.0F + (float) k, this.posY, u1, v0);
+			return (float) l;
+		}
 
 		Tessellator tessellator = Tessellator.getInstance();
 		WorldRenderer worldrenderer = tessellator.getWorldRenderer();
@@ -302,7 +316,9 @@ public class FontRenderer implements IResourceManagerReloadListener {
 			return 0.0F;
 		} else {
 			int j = ch / 256;
-			this.loadGlyphTexture(j);
+			if (!this.aeroBatching) { // Aero Client: the batch binds the page texture itself
+				this.loadGlyphTexture(j);
+			}
 			int k = i >>> 4;
 			int l = i & 15;
 			float f = (float) k;
@@ -311,6 +327,18 @@ public class FontRenderer implements IResourceManagerReloadListener {
 			float f3 = (float) ((ch & 255) / 16 * 16);
 			float f4 = f1 - f - 0.02F;
 			float f5 = italic ? 1.0F : 0.0F;
+
+			if (this.aeroBatching) {
+				// Aero Client: Fast Text adds the letter to one batch for the whole string
+				WorldRenderer wr = this.aeroBatchFor(j);
+				float u0 = f2 / 256.0F, v0 = f3 / 256.0F, u1 = (f2 + f4) / 256.0F, v1 = (f3 + 15.98F) / 256.0F;
+				this.aeroVertex(wr, this.posX + f5, this.posY, u0, v0);
+				this.aeroVertex(wr, this.posX - f5, this.posY + 7.99F, u0, v1);
+				this.aeroVertex(wr, this.posX + f4 / 2.0F - f5, this.posY + 7.99F, u1, v1);
+				this.aeroVertex(wr, this.posX + f4 / 2.0F + f5, this.posY, u1, v0);
+				return (f1 - f) / 2.0F + 1.0F;
+			}
+
 			Tessellator tessellator = Tessellator.getInstance();
 			WorldRenderer worldrenderer = tessellator.getWorldRenderer();
 
@@ -381,6 +409,75 @@ public class FontRenderer implements IResourceManagerReloadListener {
 	 * Render a single line string at the current (posX,posY) and update posX
 	 */
 	protected void renderStringAtPos(String text, boolean shadow) {
+		// Aero Client: Fast Text draws the whole string at once instead of one draw call per letter
+		this.aeroBatching = net.aeroclient.module.performance.FastTextModule.active();
+		this.aeroBatchPage = -2;
+		this.aeroBatchColor = aeroPack(this.red, this.blue, this.green, this.alpha);
+		try {
+			this.renderStringAtPos1(text, shadow);
+		} finally {
+			if (this.aeroBatching) {
+				this.aeroFlush();
+				this.aeroBatching = false;
+				GlStateManager.color((float) (this.aeroBatchColor >> 16 & 255) / 255.0F,
+						(float) (this.aeroBatchColor >> 8 & 255) / 255.0F, (float) (this.aeroBatchColor & 255) / 255.0F,
+						(float) (this.aeroBatchColor >>> 24) / 255.0F); // leave the color as normal Minecraft would
+			}
+		}
+	}
+
+	// ---------------- Aero Client: Fast Text ----------------
+
+	private boolean aeroBatching = false;
+	private int aeroBatchPage = -2; // -2 = nothing collected, -1 = normal font, 0..255 = unicode page
+	private int aeroBatchColor;
+
+	private static int aeroPack(float r, float g, float b, float a) {
+		return ((int) (a * 255.0F) & 255) << 24 | ((int) (r * 255.0F) & 255) << 16 | ((int) (g * 255.0F) & 255) << 8
+				| ((int) (b * 255.0F) & 255);
+	}
+
+	/** Returns the batch buffer for this texture, drawing what's collected first if the texture changes. */
+	private WorldRenderer aeroBatchFor(int page) {
+		WorldRenderer wr = Tessellator.getInstance().getWorldRenderer();
+		if (this.aeroBatchPage != page) {
+			this.aeroFlush();
+			if (page < 0) {
+				this.renderEngine.bindTexture(this.locationFontTexture);
+			} else {
+				this.loadGlyphTexture(page);
+			}
+			wr.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+			this.aeroBatchPage = page;
+		}
+		return wr;
+	}
+
+	private void aeroVertex(WorldRenderer wr, float x, float y, float u, float v) {
+		int c = this.aeroBatchColor;
+		wr.pos(x, y, 0.0D).tex(u, v).color(c >> 16 & 255, c >> 8 & 255, c & 255, c >>> 24).endVertex();
+	}
+
+	/** Draws the letters collected so far. */
+	private void aeroFlush() {
+		if (this.aeroBatchPage != -2) {
+			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F); // the color is in each corner instead
+			Tessellator.getInstance().draw();
+			this.aeroBatchPage = -2;
+		}
+	}
+
+	/** Before drawing an underline or strikethrough: draw the letters so far and use the text color. */
+	private void aeroBeforeLine() {
+		if (this.aeroBatching) {
+			this.aeroFlush();
+			int c = this.aeroBatchColor;
+			GlStateManager.color((float) (c >> 16 & 255) / 255.0F, (float) (c >> 8 & 255) / 255.0F,
+					(float) (c & 255) / 255.0F, (float) (c >>> 24) / 255.0F);
+		}
+	}
+
+	private void renderStringAtPos1(String text, boolean shadow) { // Aero Client: was renderStringAtPos
 		for (int i = 0; i < text.length(); ++i) {
 			char c0 = text.charAt(i);
 
@@ -404,8 +501,12 @@ public class FontRenderer implements IResourceManagerReloadListener {
 
 					int j1 = this.colorCode[i1];
 					this.textColor = j1;
+					if (this.aeroBatching) { // Aero Client: color goes into each letter's corners
+						this.aeroBatchColor = (j1 & 0xFFFFFF) | ((int) (this.alpha * 255.0F) & 255) << 24;
+					} else {
 					GlStateManager.color((float) (j1 >> 16) / 255.0F, (float) (j1 >> 8 & 255) / 255.0F,
 							(float) (j1 & 255) / 255.0F, this.alpha);
+					}
 				} else if (i1 == 16) {
 					this.randomStyle = true;
 				} else if (i1 == 17) {
@@ -422,7 +523,11 @@ public class FontRenderer implements IResourceManagerReloadListener {
 					this.strikethroughStyle = false;
 					this.underlineStyle = false;
 					this.italicStyle = false;
+					if (this.aeroBatching) { // Aero Client
+						this.aeroBatchColor = aeroPack(this.red, this.blue, this.green, this.alpha);
+					} else {
 					GlStateManager.color(this.red, this.blue, this.green, this.alpha);
+					}
 				}
 
 				++i;
@@ -481,6 +586,7 @@ public class FontRenderer implements IResourceManagerReloadListener {
 				}
 
 				if (this.strikethroughStyle) {
+					this.aeroBeforeLine(); // Aero Client
 					Tessellator tessellator = Tessellator.getInstance();
 					WorldRenderer bufferbuilder = tessellator.getBuffer();
 					GlStateManager.disableTexture2D();
@@ -500,6 +606,7 @@ public class FontRenderer implements IResourceManagerReloadListener {
 				}
 
 				if (this.underlineStyle) {
+					this.aeroBeforeLine(); // Aero Client
 					Tessellator tessellator1 = Tessellator.getInstance();
 					WorldRenderer bufferbuilder1 = tessellator1.getBuffer();
 					GlStateManager.disableTexture2D();

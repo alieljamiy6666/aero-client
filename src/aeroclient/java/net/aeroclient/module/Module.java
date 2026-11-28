@@ -42,6 +42,7 @@ public abstract class Module {
 	private int keybind;
 	private final int defaultKeybind;
 	private boolean enabled = false;
+	private boolean enabledByDefault = false;
 
 	private final List<Subscription<?>> subscriptions = new ArrayList<>();
 	private final List<Setting<?>> settings = new ArrayList<>();
@@ -88,7 +89,24 @@ public abstract class Module {
 		return null;
 	}
 
-	/** Turns the module off and puts its key and every setting back to default (used when switching profiles). */
+	/**
+	 * Makes this module start turned on for new players and new profiles (used
+	 * by the performance modules). Call it from the constructor.
+	 */
+	protected final void enabledByDefault() {
+		this.enabledByDefault = true;
+	}
+
+	/** True if this module starts turned on for new players and new profiles. */
+	public final boolean isEnabledByDefault() {
+		return this.enabledByDefault;
+	}
+
+	/**
+	 * Turns the module off and puts its key and every setting back to default
+	 * (used when switching profiles). The config then turns it back on if it
+	 * was saved on, or if it's on by default and nothing was saved.
+	 */
 	public void resetToDefaults() {
 		setEnabled(false);
 		this.keybind = this.defaultKeybind;

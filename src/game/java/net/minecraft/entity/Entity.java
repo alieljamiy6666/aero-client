@@ -262,6 +262,8 @@ public abstract class Entity implements ICommandSender {
 	 * frustum.
 	 */
 	public boolean ignoreFrustumCheck;
+	public int aeroCullFrame = Integer.MIN_VALUE / 2; // Aero Client: Entity Culling's last check
+	public boolean aeroCulled; // Aero Client: Entity Culling's last answer
 	public boolean isAirBorne;
 	public int timeUntilPortal;
 

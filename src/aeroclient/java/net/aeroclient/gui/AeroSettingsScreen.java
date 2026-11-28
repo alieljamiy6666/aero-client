@@ -3,6 +3,7 @@ package net.aeroclient.gui;
 import java.io.IOException;
 
 import net.aeroclient.config.ConfigManager;
+import net.aeroclient.module.performance.LowEndPreset;
 import net.aeroclient.theme.Animation;
 import net.aeroclient.theme.Theme;
 import net.aeroclient.util.RenderUtil;
@@ -18,13 +19,17 @@ import net.minecraft.client.gui.GuiScreen;
  */
 public class AeroSettingsScreen extends GuiScreen {
 
-	private static final int ID_BUTTONS = 1, ID_BACKGROUND = 2, ID_PREVIEW = 3, ID_DONE = 4, ID_PROFILES = 5;
+	private static final int ID_BUTTONS = 1, ID_BACKGROUND = 2, ID_PREVIEW = 3, ID_DONE = 4, ID_PROFILES = 5,
+			ID_LOW_END = 6;
 
 	private final GuiScreen parent;
 	private final Animation.Fader appear = new Animation.Fader(300.0F);
 	private final Animation.Fader[] swatchFaders = new Animation.Fader[Theme.ACCENT_COLORS.length];
 
 	private float panelX, panelY, panelW, panelH;
+	private GuiButton lowEndButton;
+	/** When the Low-end Preset button was clicked once (it needs a second click), or 0. */
+	private long lowEndArmedAt = 0L;
 
 	public AeroSettingsScreen(GuiScreen parent) {
 		this.parent = parent;
@@ -37,7 +42,7 @@ public class AeroSettingsScreen extends GuiScreen {
 	public void initGui() {
 		this.buttonList.clear();
 		this.panelW = Math.min(300, this.width - 20);
-		this.panelH = 168;
+		this.panelH = 198;
 		this.panelX = this.width / 2.0F - this.panelW / 2.0F;
 		this.panelY = Math.max(8, this.height / 2.0F - this.panelH / 2.0F - 14);
 		int cx = this.width / 2;
@@ -46,6 +51,9 @@ public class AeroSettingsScreen extends GuiScreen {
 		this.buttonList.add(new GuiButton(ID_BACKGROUND, cx - 100, y + 24, 200, 20, backgroundLabel()));
 		this.buttonList.add(new GuiButton(ID_PROFILES, cx - 100, y + 48, 98, 20, "Profiles..."));
 		this.buttonList.add(new GuiButton(ID_PREVIEW, cx + 2, y + 48, 98, 20, "Theme Preview..."));
+		this.lowEndButton = new GuiButton(ID_LOW_END, cx - 100, y + 72, 200, 20, "Low-end Preset...");
+		this.buttonList.add(this.lowEndButton);
+		this.lowEndArmedAt = 0L;
 		this.buttonList.add(new GuiButton(ID_DONE, cx - 100, (int) (this.panelY + this.panelH) + 10, 200, 20, "Done"));
 	}
 
@@ -75,6 +83,18 @@ public class AeroSettingsScreen extends GuiScreen {
 			break;
 		case ID_PREVIEW:
 			this.mc.displayGuiScreen(new AeroThemeTestScreen(this));
+			break;
+		case ID_LOW_END:
+			// two clicks, because it also changes some normal video settings
+			if (this.lowEndArmedAt == 0L) {
+				this.lowEndArmedAt = System.currentTimeMillis();
+				button.displayString = "Click again to apply";
+			} else {
+				LowEndPreset.apply();
+				this.lowEndArmedAt = 0L;
+				button.displayString = "Low-end Preset: Applied";
+				this.buttonList.get(1).displayString = backgroundLabel();
+			}
 			break;
 		case ID_DONE:
 			this.mc.displayGuiScreen(this.parent);
@@ -157,6 +177,19 @@ public class AeroSettingsScreen extends GuiScreen {
 				net.aeroclient.AeroClient.getDisplayName() + " - Made by " + net.aeroclient.AeroClient.AUTHOR,
 				this.width / 2.0F, this.height - 12, Theme.withAlpha(Theme.textFaded, a));
 
+		if (this.lowEndArmedAt != 0L && System.currentTimeMillis() - this.lowEndArmedAt > 4000L) {
+			this.lowEndArmedAt = 0L; // the second click didn't come: back to normal
+			this.lowEndButton.displayString = "Low-end Preset...";
+		}
+
 		super.drawScreen(mouseX, mouseY, partialTicks);
+
+		if (this.lowEndButton.isMouseOver()) {
+			// centered just above the button, so it doesn't cover the button's own label
+			String changes = String.join("\n", LowEndPreset.CHANGES);
+			int h = this.fontRendererObj.listFormattedStringToWidth(changes, 170).size() * 10 - 2;
+			net.aeroclient.gui.clickgui.Widgets.tooltip(this.fontRendererObj, changes, this.width / 2,
+					this.lowEndButton.yPosition - h - 26, this.width, this.height, true, 1.0F);
+		}
 	}
 }

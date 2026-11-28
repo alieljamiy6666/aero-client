@@ -88,6 +88,13 @@ public abstract class Render<T extends Entity> {
 		}
 	}
 
+	/** Aero Client: draws just the name tag (used by Entity Culling for entities it hid). */
+	public final void aeroRenderNameOnly(T entity, double x, double y, double z) {
+		if (!this.renderOutlines) {
+			this.renderName(entity, x, y, z);
+		}
+	}
+
 	protected boolean canRenderName(T entity) {
 		return entity.getAlwaysRenderNameTagForRender() && entity.hasCustomName();
 	}

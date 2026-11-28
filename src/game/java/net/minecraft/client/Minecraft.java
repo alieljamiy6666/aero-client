@@ -959,12 +959,16 @@ public class Minecraft implements IThreadListener {
 
 	public void updateDisplay() {
 		net.aeroclient.gui.AeroMenuBackground.nextFrame(); // Aero Client: count frames for the menu background
+		int aeroBackground = net.aeroclient.module.performance.BackgroundFpsModule.limit(); // Aero Client
 		if (Display.isVSyncSupported()) {
-			Display.setVSync(this.gameSettings.enableVsync);
+			// Aero Client: vsync ignores frame limits, so Background FPS Limit pauses it while unfocused
+			Display.setVSync(this.gameSettings.enableVsync && aeroBackground == 0);
 		} else {
 			this.gameSettings.enableVsync = false;
 		}
-		if (!this.gameSettings.enableVsync && this.isFramerateLimitBelowMax()) {
+		if (aeroBackground > 0) {
+			Display.update(aeroBackground); // Aero Client: Background FPS Limit (also when vsync is on)
+		} else if (!this.gameSettings.enableVsync && this.isFramerateLimitBelowMax()) {
 			Display.update(this.getLimitFramerate());
 		} else {
 			Display.update(0);
@@ -997,6 +1001,10 @@ public class Minecraft implements IThreadListener {
 	}
 
 	public int getLimitFramerate() {
+		int aeroBackground = net.aeroclient.module.performance.BackgroundFpsModule.limit(); // Aero Client
+		if (aeroBackground > 0) {
+			return aeroBackground;
+		}
 		return this.world == null && this.currentScreen != null ? 30 : this.gameSettings.limitFramerate;
 	}
 

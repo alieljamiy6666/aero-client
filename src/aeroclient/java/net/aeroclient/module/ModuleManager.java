@@ -17,6 +17,11 @@ import net.aeroclient.module.hud.PotionEffectsModule;
 import net.aeroclient.module.hud.ServerInfoModule;
 import net.aeroclient.module.hud.SpeedModule;
 import net.aeroclient.module.misc.TestModule;
+import net.aeroclient.module.performance.BackgroundFpsModule;
+import net.aeroclient.module.performance.EntityCullingModule;
+import net.aeroclient.module.performance.FastTextModule;
+import net.aeroclient.module.performance.ParticleLimitModule;
+import net.aeroclient.module.performance.SmartChunkUpdatesModule;
 import net.aeroclient.module.pvp.ComboCounterModule;
 import net.aeroclient.module.pvp.CrosshairModule;
 import net.aeroclient.module.pvp.HitColorModule;
@@ -70,6 +75,12 @@ public final class ModuleManager {
 		register(new WeatherToggleModule());
 		register(new ParticleMultiplierModule());
 		register(new NametagsModule());
+		// Performance modules (on by default; the Low-end preset in Aero Settings turns them all on)
+		register(new EntityCullingModule());
+		register(new ParticleLimitModule());
+		register(new SmartChunkUpdatesModule());
+		register(new FastTextModule());
+		register(new BackgroundFpsModule());
 
 		AeroClient.EVENTS.subscribe(KeyEvent.class, this::onKey);
 		AeroClient.LOGGER.info("Registered " + modules.size() + " module(s)");

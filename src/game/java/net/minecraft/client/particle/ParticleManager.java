@@ -183,7 +183,8 @@ public class ParticleManager {
 		}
 
 		if (!this.queueEntityFX.isEmpty()) {
-			for (int i = 0; i < this.queueEntityFX.size(); i++) {
+			// Aero Client: add every queued particle, then empty the queue (removing while looping skipped half of them)
+			for (int i = 0, n = this.queueEntityFX.size(); i < n; i++) {
 				Particle particle = this.queueEntityFX.get(i);
 				int j = particle.getFXLayer();
 				int k = particle.isTransparent() ? 0 : 1;
@@ -193,8 +194,33 @@ public class ParticleManager {
 				}
 
 				this.fxLayers[j][k].add(particle);
-				this.queueEntityFX.remove(particle);
 			}
+			this.queueEntityFX.clear();
+			this.aeroEnforceLimit(net.aeroclient.module.performance.ParticleLimitModule.limit()); // Aero Client
+		}
+	}
+
+	/** Aero Client: Particle Limit removes the oldest particles from the fullest lists until under the limit. */
+	private void aeroEnforceLimit(int limit) {
+		if (limit == Integer.MAX_VALUE) {
+			return;
+		}
+		int total = 0;
+		for (int i = 0; i < 4; ++i) {
+			total += this.fxLayers[i][0].size() + this.fxLayers[i][1].size();
+		}
+		while (total > limit) {
+			List<Particle> fullest = this.fxLayers[0][0];
+			for (int i = 0; i < 4; ++i) {
+				for (int j = 0; j < 2; ++j) {
+					if (this.fxLayers[i][j].size() > fullest.size()) {
+						fullest = this.fxLayers[i][j];
+					}
+				}
+			}
+			int remove = Math.min(total - limit, fullest.size());
+			fullest.subList(0, remove).clear();
+			total -= remove;
 		}
 	}
 
@@ -206,13 +232,22 @@ public class ParticleManager {
 
 	private void tickParticleList(List<Particle> p_187240_1_) {
 		if (!p_187240_1_.isEmpty()) {
-			for (int i = 0; i < p_187240_1_.size(); i++) {
+			// Aero Client: drop dead particles in one pass. Removing them one by one searched the whole
+			// list each time (very slow with thousands of particles) and skipped the next particle.
+			int alive = 0;
+			for (int i = 0, n = p_187240_1_.size(); i < n; i++) {
 				Particle particle = p_187240_1_.get(i);
 				this.tickParticle(particle);
 
-				if (!particle.isAlive()) {
-					p_187240_1_.remove(particle);
+				if (particle.isAlive()) {
+					if (alive != i) {
+						p_187240_1_.set(alive, particle);
+					}
+					++alive;
 				}
+			}
+			if (alive < p_187240_1_.size()) {
+				p_187240_1_.subList(alive, p_187240_1_.size()).clear();
 			}
 		}
 	}
@@ -290,7 +325,15 @@ public class ParticleManager {
 					WorldRenderer bufferbuilder = tessellator.getBuffer();
 					bufferbuilder.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
 
+					boolean aeroSkipBehind = net.aeroclient.module.performance.ParticleLimitModule.skipBehindCamera(); // Aero Client
+					double lookX = Particle.cameraViewDir.xCoord, lookY = Particle.cameraViewDir.yCoord,
+							lookZ = Particle.cameraViewDir.zCoord;
 					for (final Particle particle : this.fxLayers[i][j]) {
+						if (aeroSkipBehind && (particle.posX - Particle.interpPosX) * lookX
+								+ (particle.posY - Particle.interpPosY) * lookY
+								+ (particle.posZ - Particle.interpPosZ) * lookZ < -4.0D) {
+							continue; // Aero Client: Particle Limit skips particles well behind the camera
+						}
 						try {
 							particle.renderParticle(bufferbuilder, entityIn, partialTicks, f, f4, f1, f2, f3);
 						} catch (Throwable throwable) {

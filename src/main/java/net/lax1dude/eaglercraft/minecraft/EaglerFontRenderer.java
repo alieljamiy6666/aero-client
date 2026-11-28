@@ -53,6 +53,9 @@ public class EaglerFontRenderer extends FontRenderer {
 			this.posY = y;
 		} else {
 			if (this.unicodeFlag || !decodeASCIICodepointsAndValidate(text)) {
+				if (this.aeroBatching) {
+					this.aeroFlushBatch(); // Aero Client: keep the drawing order
+				}
 				return super.drawString(text, x, y, color, dropShadow);
 			}
 			this.resetStyles();
@@ -66,9 +69,123 @@ public class EaglerFontRenderer extends FontRenderer {
 			this.posX = x;
 			this.posY = y;
 			this.textColor = color;
-			this.renderStringAtPos0(text, dropShadow);
+			if (this.aeroBatching && !aeroHasLineStyles(text)) {
+				// Aero Client: Fast Text adds the letters to the batch instead of drawing right away
+				int shadow = dropShadow ? 1 : 0;
+				if (this.aeroBatchShadow != -1 && this.aeroBatchShadow != shadow) {
+					this.aeroFlushBatch();
+				}
+				this.aeroBatchShadow = shadow;
+				this.aeroAppendGlyphs(text);
+				if (dropShadow) {
+					this.posX += 1.0f;
+				}
+			} else {
+				if (this.aeroBatching) {
+					this.aeroFlushBatch(); // Aero Client: keep the drawing order
+				}
+				this.renderStringAtPos0(text, dropShadow);
+				if (this.aeroBatching) {
+					InstancedFontRenderer.begin(); // Aero Client: start the batch again
+				}
+			}
 		}
 		return (int) this.posX;
+	}
+
+	// ---------------- Aero Client: Fast Text ----------------
+
+	private boolean aeroBatching = false;
+	private int aeroBatchShadow = -1;
+
+	/**
+	 * Aero Client: starts collecting text so that many strings are drawn with
+	 * one draw call instead of one or two each. Only use it while the GL
+	 * matrix stays the same, and always finish with {@link #aeroEndBatch()}.
+	 */
+	public void aeroBeginBatch() {
+		this.aeroBatching = true;
+		this.aeroBatchShadow = -1;
+		InstancedFontRenderer.begin();
+	}
+
+	/** Aero Client: draws everything collected since {@link #aeroBeginBatch()}. */
+	public void aeroEndBatch() {
+		if (this.aeroBatching) {
+			this.aeroFlushBatch();
+			this.aeroBatching = false;
+		}
+	}
+
+	private void aeroFlushBatch() {
+		if (this.aeroBatchShadow != -1) {
+			renderEngine.bindTexture(locationFontTexture);
+			GlStateManager.enableTexture2D();
+			GlStateManager.enableAlpha();
+			GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+			InstancedFontRenderer.render(8, 8, 0.0625f, 0.0625f, this.aeroBatchShadow == 1);
+		}
+		InstancedFontRenderer.begin();
+		this.aeroBatchShadow = -1;
+	}
+
+	/** Aero Client: underline and strikethrough draw extra lines, so those strings skip the batch. */
+	private static boolean aeroHasLineStyles(String text) {
+		for (int i = text.indexOf(167); i >= 0 && i + 1 < text.length(); i = text.indexOf(167, i + 1)) {
+			char c = Character.toLowerCase(text.charAt(i + 1));
+			if (c == 'm' || c == 'n') {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Aero Client: the letters part of {@link #renderStringAtPos0} (no underline/strikethrough), into the batch. */
+	private void aeroAppendGlyphs(String text) {
+		for (int i = 0; i < text.length(); ++i) {
+			char c0 = text.charAt(i);
+			if (c0 == 167 && i + 1 < text.length()) {
+				int i1 = "0123456789abcdefklmnor".indexOf(Character.toLowerCase(text.charAt(i + 1)));
+				if (i1 < 16) {
+					this.randomStyle = false;
+					this.boldStyle = false;
+					this.italicStyle = false;
+					if (i1 < 0 || i1 > 15) {
+						i1 = 15;
+					}
+					this.textColor = this.colorCode[i1] | (this.textColor & 0xFF000000);
+				} else if (i1 == 16) {
+					this.randomStyle = true;
+				} else if (i1 == 17) {
+					this.boldStyle = true;
+				} else if (i1 == 20) {
+					this.italicStyle = true;
+				} else if (i1 == 21) {
+					this.randomStyle = false;
+					this.boldStyle = false;
+					this.italicStyle = false;
+					this.textColor = ((int) (this.alpha * 255.0f) << 24) | ((int) (this.red * 255.0f) << 16)
+							| ((int) (this.green * 255.0f) << 8) | (int) (this.blue * 255.0f);
+				}
+				++i;
+			} else {
+				int j = temporaryCodepointArray[i];
+				if (j > 255) {
+					continue;
+				}
+				if (this.randomStyle && j != -1) {
+					int k = this.getCharWidth(c0);
+					char[] chars = FontRenderer.codepointLookup;
+					while (true) {
+						j = this.fontRandom.nextInt(chars.length);
+						if (k == this.getCharWidth(chars[j])) {
+							break;
+						}
+					}
+				}
+				this.posX += (float) ((int) this.appendCharToBuffer(j, this.textColor, this.boldStyle, this.italicStyle));
+			}
+		}
 	}
 
 	@Override

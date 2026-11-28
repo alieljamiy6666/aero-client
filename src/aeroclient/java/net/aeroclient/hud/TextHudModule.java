@@ -1,6 +1,7 @@
 package net.aeroclient.hud;
 
 import net.aeroclient.module.Category;
+import net.aeroclient.module.performance.FastTextModule;
 import net.aeroclient.module.setting.BooleanSetting;
 import net.aeroclient.theme.Theme;
 import net.minecraft.client.Minecraft;
@@ -131,14 +132,23 @@ public abstract class TextHudModule extends HudModule {
 		FontRenderer font = this.mc.fontRendererObj;
 		boolean shadow = this.textShadow.isOn();
 		int column = getAnchor().column;
-		for (int i = 0; i < this.lineCount; i++) {
-			float x = column == 0 ? 0.0F
-					: (column == 1 ? (this.width - this.lineWidths[i]) / 2.0F : this.width - this.lineWidths[i]);
-			float y = i * LINE_H;
-			if (!this.labels[i].isEmpty()) {
-				font.drawString(this.labels[i], x, y, Theme.accentLight, shadow);
+		// Fast Text: all lines of this element become one draw call (the lines and widths above are cached
+		// and only rebuilt when the text changes)
+		boolean batch = FastTextModule.beginBatch(font);
+		try {
+			for (int i = 0; i < this.lineCount; i++) {
+				float x = column == 0 ? 0.0F
+						: (column == 1 ? (this.width - this.lineWidths[i]) / 2.0F : this.width - this.lineWidths[i]);
+				float y = i * LINE_H;
+				if (!this.labels[i].isEmpty()) {
+					font.drawString(this.labels[i], x, y, Theme.accentLight, shadow);
+				}
+				font.drawString(this.values[i], x + this.labelWidths[i], y, this.valueColors[i], shadow);
 			}
-			font.drawString(this.values[i], x + this.labelWidths[i], y, this.valueColors[i], shadow);
+		} finally {
+			if (batch) {
+				FastTextModule.endBatch(font);
+			}
 		}
 	}
 

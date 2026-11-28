@@ -212,6 +212,11 @@ public class GuiOverlayDebug extends Gui {
 							new Object[] { enumfacing, s, Float.valueOf(MathHelper.wrapDegrees(entity.rotationYaw)),
 									Float.valueOf(MathHelper.wrapDegrees(entity.rotationPitch)) }));
 
+			String aeroCulling = net.aeroclient.module.performance.EntityCullingModule.debugLine(); // Aero Client
+			if (aeroCulling != null) {
+				list.add(4, aeroCulling); // under the "E:" (entities drawn) line
+			}
+
 			if (this.mc.world != null) {
 				Chunk chunk = this.mc.world.getChunkFromBlockCoords(blockpos);
 

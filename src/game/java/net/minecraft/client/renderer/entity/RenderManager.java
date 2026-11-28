@@ -370,6 +370,25 @@ public class RenderManager {
 				p_188388_3_);
 	}
 
+	/**
+	 * Aero Client: draws only the name tag of an entity that Entity Culling
+	 * hid, because normal Minecraft shows these names through walls.
+	 */
+	public void renderNameOnly(Entity entityIn, float partialTicks) {
+		Render<Entity> render = this.<Entity>getEntityRenderObject(entityIn);
+		if (render == null || this.renderEngine == null) {
+			return;
+		}
+		double d0 = entityIn.lastTickPosX + (entityIn.posX - entityIn.lastTickPosX) * (double) partialTicks;
+		double d1 = entityIn.lastTickPosY + (entityIn.posY - entityIn.lastTickPosY) * (double) partialTicks;
+		double d2 = entityIn.lastTickPosZ + (entityIn.posZ - entityIn.lastTickPosZ) * (double) partialTicks;
+		int i = entityIn.isBurning() ? 15728880 : entityIn.getBrightnessForRender();
+		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float) (i % 65536), (float) (i / 65536));
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		render.setRenderOutlines(this.renderOutlines);
+		render.aeroRenderNameOnly(entityIn, d0 - this.renderPosX, d1 - this.renderPosY, d2 - this.renderPosZ);
+	}
+
 	public void doRenderEntity(Entity entityIn, double x, double y, double z, float yaw, float partialTicks,
 			boolean p_188391_10_) {
 		Render<Entity> render = null;

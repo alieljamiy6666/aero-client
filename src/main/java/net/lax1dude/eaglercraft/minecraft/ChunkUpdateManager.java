@@ -91,6 +91,13 @@ public class ChunkUpdateManager {
 	}
 
 	public boolean updateChunks(long timeout) {
+		return updateChunks(timeout, Integer.MAX_VALUE); // Aero Client
+	}
+
+	private final List<ChunkCompileTaskGenerator> droppedUpdates = new LinkedList(); // Aero Client: reused every frame
+
+	/** Aero Client: like {@link #updateChunks(long)} but also stops after maxBuilds chunks. */
+	public boolean updateChunks(long timeout, int maxBuilds) {
 		Entity entity = Minecraft.getMinecraft().getRenderViewEntity();
 		if (entity == null) {
 			queue.clear();
@@ -99,7 +106,8 @@ public class ChunkUpdateManager {
 		} else {
 			boolean flag = false;
 			long millis = System.currentTimeMillis();
-			List<ChunkCompileTaskGenerator> droppedUpdates = new LinkedList();
+			droppedUpdates.clear(); // Aero Client
+			int builds = 0; // Aero Client
 			while (!queue.isEmpty()) {
 				ChunkCompileTaskGenerator generator = queue.remove(0);
 
@@ -115,11 +123,12 @@ public class ChunkUpdateManager {
 
 				++chunkUpdatesTotal;
 
-				if (timeout < System.nanoTime()) {
+				if (timeout < System.nanoTime() || ++builds >= maxBuilds) { // Aero Client: build limit
 					break;
 				}
 			}
 			queue.addAll(droppedUpdates);
+			droppedUpdates.clear(); // Aero Client
 			return flag;
 		}
 	}

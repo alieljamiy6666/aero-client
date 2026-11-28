@@ -285,6 +285,9 @@ public final class ConfigManager {
 				m.resetToDefaults();
 				JSONObject mod = modules == null ? null : modules.optJSONObject(m.getName());
 				if (mod == null) {
+					if (m.isEnabledByDefault()) {
+						m.setEnabled(true); // never saved: use the module's default
+					}
 					continue;
 				}
 				Object key = mod.opt("key");
@@ -314,7 +317,7 @@ public final class ConfigManager {
 						AeroClient.LOGGER.warn("Module " + m.getName() + " couldn't load its extra data");
 					}
 				}
-				if (mod.optBoolean("enabled", false)) {
+				if (mod.optBoolean("enabled", m.isEnabledByDefault())) {
 					m.setEnabled(true); // last, so it turns on with its settings already in place
 				}
 			} catch (Throwable t) {

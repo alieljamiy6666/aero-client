@@ -525,6 +525,7 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
 			this.mc.entityRenderer.enableLightmap();
 			List<Entity> list = this.theWorld.getLoadedEntityList();
 			this.countEntitiesTotal = list.size();
+			net.aeroclient.module.performance.EntityCullingModule.beginFrame(entity, partialTicks); // Aero Client
 			
 			if (!this.mc.gameSettings.fog && this.mc.entityRenderer.fogStandard) {
                 GlStateManager.disableFog();
@@ -565,6 +566,14 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
 									|| flag1)
 									&& (entity2.posY < 0.0D || entity2.posY >= 256.0D || this.theWorld
 											.isBlockLoaded(blockpos$pooledmutableblockpos.setPos(entity2)))) {
+								if (!entity2.isRidingOrBeingRiddenBy(this.mc.player)
+										&& net.aeroclient.module.performance.EntityCullingModule.isHidden(entity2)) {
+									// Aero Client: Entity Culling skips it, but keeps names that show through walls
+									if (net.aeroclient.module.performance.EntityCullingModule.keepNametags()) {
+										this.renderManager.renderNameOnly(entity2, partialTicks);
+									}
+									continue;
+								}
 								++this.countEntitiesRendered;
 								this.renderManager.renderEntityStatic(entity2, partialTicks, false);
 								if (this.isOutlineActive(entity2, entity, camera)) {
@@ -596,8 +605,11 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
 
 				if (!list3.isEmpty()) {
 					for (int m = 0, n = list3.size(); m < n; ++m) {
-						TileEntityRendererDispatcher.instance.renderTileEntity((TileEntity) list3.get(m), partialTicks,
-								-1);
+						TileEntity te = (TileEntity) list3.get(m);
+						if (net.aeroclient.module.performance.EntityCullingModule.isHidden(te)) {
+							continue; // Aero Client: Entity Culling
+						}
+						TileEntityRendererDispatcher.instance.renderTileEntity(te, partialTicks, -1);
 					}
 				}
 			}
@@ -1244,8 +1256,15 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
 	}
 
 	public void updateChunks(long finishTimeNano) {
+		if (net.aeroclient.module.performance.SmartChunkUpdatesModule.active()) {
+			// Aero Client: Smart Chunk Updates gives chunk building a small budget instead of 100 ms extra
+			this.displayListEntitiesDirty |= this.renderDispatcher.updateChunks(
+					net.aeroclient.module.performance.SmartChunkUpdatesModule.deadline(System.nanoTime()),
+					net.aeroclient.module.performance.SmartChunkUpdatesModule.maxPerFrame());
+		} else {
 		finishTimeNano = (long)((double)finishTimeNano + 1.0E8D);
         this.displayListEntitiesDirty |= this.renderDispatcher.updateChunks(finishTimeNano);
+		} // Aero Client
 
         if (this.chunksToUpdateForced.size() > 0) {
             Iterator iterator = this.chunksToUpdateForced.iterator();

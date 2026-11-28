@@ -36,6 +36,9 @@ public abstract class TileEntity {
 	protected BlockPos pos = BlockPos.ORIGIN;
 	protected boolean tileEntityInvalid;
 	private int blockMetadata = -1;
+	public int aeroCullFrame = Integer.MIN_VALUE / 2; // Aero Client: Entity Culling's last check
+	public boolean aeroCulled; // Aero Client: Entity Culling's last answer
+	public int aeroCullMoves; // Aero Client: camera position (in Entity Culling's count of moves) at the last check
 
 	/** the Block type that this TileEntity is contained within */
 	protected Block blockType;
