@@ -1571,6 +1571,7 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 			return;
 		}
 
+		net.aeroclient.module.misc.AutoGGModule.onTitle(s != null ? s : s1); // Aero Client: Auto GG checks titles too
 		this.gameController.ingameGUI.displayTitle(s, s1, packetIn.getFadeInTime(), packetIn.getDisplayTime(),
 				packetIn.getFadeOutTime());
 	}

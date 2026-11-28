@@ -790,6 +790,9 @@ public class ClickGuiScreen extends GuiScreen {
 			return;
 		}
 		boolean repeat = Keyboard.isRepeatEvent();
+		if (this.panel.textTyped(typedChar, keyCode)) {
+			return; // typing in a text setting (like Auto GG's message)
+		}
 		if (keyCode != 0 && !repeat && this.panel.keyTyped(keyCode)) {
 			return; // a key button was waiting for a key
 		}

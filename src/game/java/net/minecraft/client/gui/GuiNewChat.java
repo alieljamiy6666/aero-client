@@ -46,6 +46,12 @@ public class GuiNewChat extends Gui {
 				GlStateManager.translate(2.0F, 8.0F, 0.0F);
 				GlStateManager.scale(f1, f1, 1.0F);
 				int l = 0;
+				// Aero Client: Better Chat slides new lines in; Chat Copy highlights the message under the mouse
+				long aeroNow = Minecraft.getSystemTime();
+				if (this.scrollPos == 0) {
+					GlStateManager.translate(0.0F, net.aeroclient.chat.ChatHooks.slideOffset(this.drawnChatLines, aeroNow), 0.0F);
+				}
+				ITextComponent aeroHovered = flag ? net.aeroclient.chat.ChatHooks.hoveredSource(this) : null;
 
 				for (int i1 = 0; i1 + this.scrollPos < this.drawnChatLines.size() && i1 < i; ++i1) {
 					ChatLine chatline = this.drawnChatLines.get(i1 + this.scrollPos);
@@ -66,12 +72,14 @@ public class GuiNewChat extends Gui {
 							}
 
 							l1 = (int) ((float) l1 * f);
+							l1 = (int) ((float) l1 * net.aeroclient.chat.ChatHooks.fadeIn(chatline, aeroNow)); // Aero Client
 							++l;
 
 							if (l1 > 3) {
 								int i2 = 0;
 								int j2 = -i1 * 9;
 								drawRect(-2, j2 - 9, 0 + k + 4, j2, l1 / 2 << 24);
+								net.aeroclient.chat.ChatHooks.drawLineExtras(chatline, -2, j2 - 9, k + 4, j2, l1, aeroHovered); // Aero Client
 								String s = chatline.getChatComponent().getFormattedText();
 								GlStateManager.enableBlend();
 								this.mc.fontRendererObj.drawStringWithShadow(s, 0.0F, (float) (j2 - 8),
@@ -108,6 +116,7 @@ public class GuiNewChat extends Gui {
 	 * Clears the chat.
 	 */
 	public void clearChatMessages(boolean p_146231_1_) {
+		net.aeroclient.chat.ChatHooks.reset(); // Aero Client
 		this.drawnChatLines.clear();
 		this.chatLines.clear();
 
@@ -125,12 +134,31 @@ public class GuiNewChat extends Gui {
 	 * Chat Line of that ID from the GUI
 	 */
 	public void printChatMessageWithOptionalDeletion(ITextComponent chatComponent, int chatLineId) {
+		if (net.aeroclient.chat.ChatHooks.print(this, chatComponent, chatLineId)) {
+			return; // Aero Client: the chat modules showed it (stacking, timestamps, name mention)
+		}
 		this.setChatLine(chatComponent, chatLineId, this.mc.ingameGUI.getUpdateCounter(), false);
 		LOGGER.info("[CHAT] {}",
 				(Object) chatComponent.getUnformattedText().replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n"));
 	}
 
 	private void setChatLine(ITextComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly) {
+		this.aeroSetChatLine(chatComponent, chatLineId, updateCounter, displayOnly, false, chatComponent,
+				Minecraft.getSystemTime());
+	}
+
+	/**
+	 * Aero Client: adds a message, remembering whether Name Mention highlights it
+	 * and the message without timestamp or counter (for Chat Copy).
+	 */
+	public void aeroAddMessage(ITextComponent shown, int chatLineId, boolean mention, ITextComponent source) {
+		this.aeroSetChatLine(shown, chatLineId, this.mc.ingameGUI.getUpdateCounter(), false, mention, source,
+				Minecraft.getSystemTime());
+		LOGGER.info("[CHAT] {}", (Object) shown.getUnformattedText().replace("\r", "\\r").replace("\n", "\\n"));
+	}
+
+	private void aeroSetChatLine(ITextComponent chatComponent, int chatLineId, int updateCounter, boolean displayOnly,
+			boolean mention, ITextComponent source, long time) {
 		if (chatLineId != 0) {
 			this.deleteChatLine(chatLineId);
 		}
@@ -146,17 +174,26 @@ public class GuiNewChat extends Gui {
 				this.scroll(1);
 			}
 
-			this.drawnChatLines.add(0, new ChatLine(updateCounter, itextcomponent, chatLineId));
+			ChatLine line = new ChatLine(updateCounter, itextcomponent, chatLineId);
+			line.aeroMention = mention; // Aero Client
+			line.aeroSource = source;
+			line.aeroTime = displayOnly ? 0L : time;
+			this.drawnChatLines.add(0, line);
 		}
 
-		while (this.drawnChatLines.size() > 100) {
+		int aeroLimit = net.aeroclient.chat.ChatHooks.historyLimit(); // Aero Client: Better Chat keeps more
+		while (this.drawnChatLines.size() > aeroLimit) {
 			this.drawnChatLines.remove(this.drawnChatLines.size() - 1);
 		}
 
 		if (!displayOnly) {
-			this.chatLines.add(0, new ChatLine(updateCounter, chatComponent, chatLineId));
+			net.aeroclient.chat.ChatHooks.onMessageAdded(); // Aero Client
+			ChatLine line = new ChatLine(updateCounter, chatComponent, chatLineId);
+			line.aeroMention = mention; // Aero Client
+			line.aeroSource = source;
+			this.chatLines.add(0, line);
 
-			while (this.chatLines.size() > 100) {
+			while (this.chatLines.size() > aeroLimit) {
 				this.chatLines.remove(this.chatLines.size() - 1);
 			}
 		}
@@ -168,7 +205,8 @@ public class GuiNewChat extends Gui {
 
 		for (int i = this.chatLines.size() - 1; i >= 0; --i) {
 			ChatLine chatline = this.chatLines.get(i);
-			this.setChatLine(chatline.getChatComponent(), chatline.getChatLineID(), chatline.getUpdatedCounter(), true);
+			this.aeroSetChatLine(chatline.getChatComponent(), chatline.getChatLineID(), chatline.getUpdatedCounter(),
+					true, chatline.aeroMention, chatline.aeroSource, 0L); // Aero Client: keep highlight and source
 		}
 	}
 
@@ -261,6 +299,28 @@ public class GuiNewChat extends Gui {
 				return null;
 			}
 		}
+	}
+
+	/**
+	 * Aero Client: the chat line under the mouse (raw mouse position, like
+	 * {@link #getChatComponent}), or null. Used by Chat Copy.
+	 */
+	@Nullable
+	public ChatLine aeroLineAt(int mouseX, int mouseY) {
+		if (!this.getChatOpen()) {
+			return null;
+		}
+		int i = mc.scaledResolution.getScaleFactor();
+		float f = this.getChatScale();
+		int j = MathHelper.floor((float) (mouseX / i - 2) / f);
+		int k = MathHelper.floor((float) (mouseY / i - 40) / f);
+		int l = Math.min(this.getLineCount(), this.drawnChatLines.size());
+		if (j < -2 || k < 0 || j > MathHelper.floor((float) this.getChatWidth() / f) + 4
+				|| k >= this.mc.fontRendererObj.FONT_HEIGHT * l + l) {
+			return null;
+		}
+		int i1 = k / this.mc.fontRendererObj.FONT_HEIGHT + this.scrollPos;
+		return i1 >= 0 && i1 < this.drawnChatLines.size() ? this.drawnChatLines.get(i1) : null;
 	}
 
 	/**

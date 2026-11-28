@@ -20,7 +20,7 @@ import net.minecraft.client.gui.GuiScreen;
 public class AeroSettingsScreen extends GuiScreen {
 
 	private static final int ID_BUTTONS = 1, ID_BACKGROUND = 2, ID_PREVIEW = 3, ID_DONE = 4, ID_PROFILES = 5,
-			ID_LOW_END = 6;
+			ID_LOW_END = 6, ID_SCREENSHOTS = 7;
 
 	private final GuiScreen parent;
 	private final Animation.Fader appear = new Animation.Fader(300.0F);
@@ -51,7 +51,8 @@ public class AeroSettingsScreen extends GuiScreen {
 		this.buttonList.add(new GuiButton(ID_BACKGROUND, cx - 100, y + 24, 200, 20, backgroundLabel()));
 		this.buttonList.add(new GuiButton(ID_PROFILES, cx - 100, y + 48, 98, 20, "Profiles..."));
 		this.buttonList.add(new GuiButton(ID_PREVIEW, cx + 2, y + 48, 98, 20, "Theme Preview..."));
-		this.lowEndButton = new GuiButton(ID_LOW_END, cx - 100, y + 72, 200, 20, "Low-end Preset...");
+		this.buttonList.add(new GuiButton(ID_SCREENSHOTS, cx - 100, y + 72, 98, 20, "Screenshots..."));
+		this.lowEndButton = new GuiButton(ID_LOW_END, cx + 2, y + 72, 98, 20, "Low-end Preset...");
 		this.buttonList.add(this.lowEndButton);
 		this.lowEndArmedAt = 0L;
 		this.buttonList.add(new GuiButton(ID_DONE, cx - 100, (int) (this.panelY + this.panelH) + 10, 200, 20, "Done"));
@@ -88,13 +89,16 @@ public class AeroSettingsScreen extends GuiScreen {
 			// two clicks, because it also changes some normal video settings
 			if (this.lowEndArmedAt == 0L) {
 				this.lowEndArmedAt = System.currentTimeMillis();
-				button.displayString = "Click again to apply";
+				button.displayString = "Click again";
 			} else {
 				LowEndPreset.apply();
 				this.lowEndArmedAt = 0L;
-				button.displayString = "Low-end Preset: Applied";
+				button.displayString = "Applied!";
 				this.buttonList.get(1).displayString = backgroundLabel();
 			}
+			break;
+		case ID_SCREENSHOTS:
+			this.mc.displayGuiScreen(new AeroScreenshotsScreen(this));
 			break;
 		case ID_DONE:
 			this.mc.displayGuiScreen(this.parent);

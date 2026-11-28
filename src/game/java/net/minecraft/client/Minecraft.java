@@ -2237,7 +2237,8 @@ public class Minecraft implements IThreadListener {
 			if (!(this.currentScreen instanceof GuiControls)
 					|| ((GuiControls) this.currentScreen).time <= getSystemTime() - 20L) {
 				if (Keyboard.getEventKeyState()) {
-					if (i == this.gameSettings.keyBindScreenshot.getKeyCode()) {
+					if (i == this.gameSettings.keyBindScreenshot.getKeyCode()
+							&& !net.aeroclient.module.misc.ScreenshotManagerModule.onScreenshotKey()) { // Aero Client
 						this.ingameGUI.getChatGUI().printChatMessage(ScreenShotHelper.saveScreenshot());
 					} else if (i == 48 && GuiScreen.isCtrlKeyDown() && (this.currentScreen == null
 							|| this.currentScreen != null && !this.currentScreen.func_193976_p())) {

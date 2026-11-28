@@ -45,6 +45,7 @@ final class SettingsPanel {
 
 	private SettingRow dragging;
 	private KeybindRow listening;
+	private TextRow editing;
 	private DropdownRow openDropdown;
 
 	SettingsPanel(ClickGuiScreen gui) {
@@ -86,6 +87,9 @@ final class SettingsPanel {
 			this.dragging = null;
 		}
 		this.listening = null;
+		if (this.editing != null) {
+			this.editing.stopEditing();
+		}
 		setOpenDropdown(null);
 	}
 
@@ -123,6 +127,20 @@ final class SettingsPanel {
 
 	void setListening(KeybindRow row) {
 		this.listening = row;
+	}
+
+	/** The text box being typed in, or null. */
+	TextRow getEditing() {
+		return this.editing;
+	}
+
+	void setEditing(TextRow row) {
+		if (this.editing != null && this.editing != row) {
+			TextRow old = this.editing;
+			this.editing = null;
+			old.stopEditing();
+		}
+		this.editing = row;
 	}
 
 	DropdownRow getOpenDropdown() {
@@ -298,6 +316,9 @@ final class SettingsPanel {
 			this.listening = null; // clicking anywhere cancels "press a key"
 			return true;
 		}
+		if (this.editing != null && !this.editing.isOverBox(mx, my)) {
+			this.editing.stopEditing(); // clicking somewhere else finishes typing (and the click still counts)
+		}
 		return false;
 	}
 
@@ -348,6 +369,15 @@ final class SettingsPanel {
 			this.scrollTarget = Math.max(0.0F, Math.min(this.maxScroll, this.scrollTarget - direction * 28.0F));
 		}
 		return true;
+	}
+
+	/** Typing goes to the text box being edited. Returns true if used. */
+	boolean textTyped(char c, int key) {
+		if (this.editing != null) {
+			this.editing.typed(c, key);
+			return true;
+		}
+		return false;
 	}
 
 	/** Keys go to a key button that's waiting for one. Returns true if used. */

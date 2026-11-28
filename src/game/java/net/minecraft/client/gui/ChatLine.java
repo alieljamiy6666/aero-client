@@ -12,6 +12,13 @@ public class ChatLine {
 	 */
 	private final int chatLineID;
 
+	/** Aero Client: true if Name Mention highlights this line. */
+	public boolean aeroMention;
+	/** Aero Client: the whole message this line is part of, without timestamp or (x3) counter (for Chat Copy). */
+	public ITextComponent aeroSource;
+	/** Aero Client: when this line appeared (System milliseconds), for Better Chat's slide-in. */
+	public long aeroTime;
+
 	public ChatLine(int p_i45000_1_, ITextComponent p_i45000_2_, int p_i45000_3_) {
 		this.lineString = p_i45000_2_;
 		this.updateCounterCreated = p_i45000_1_;

@@ -6,6 +6,7 @@ import net.aeroclient.module.setting.KeybindSetting;
 import net.aeroclient.module.setting.ModeSetting;
 import net.aeroclient.module.setting.NumberSetting;
 import net.aeroclient.module.setting.Setting;
+import net.aeroclient.module.setting.StringSetting;
 import net.aeroclient.theme.Animation;
 import net.aeroclient.theme.Theme;
 import net.aeroclient.util.RenderUtil;
@@ -52,6 +53,8 @@ abstract class SettingRow {
 			return new DropdownRow(panel, (ModeSetting) setting);
 		} else if (setting instanceof ColorSetting) {
 			return new ColorRow(panel, (ColorSetting) setting);
+		} else if (setting instanceof StringSetting) {
+			return new TextRow(panel, (StringSetting) setting);
 		} else if (setting instanceof KeybindSetting) {
 			KeybindSetting key = (KeybindSetting) setting;
 			return new KeybindRow(panel, key.getName(), key.getDescription(), key, key::getKey, key::set);

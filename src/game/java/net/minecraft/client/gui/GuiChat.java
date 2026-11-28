@@ -172,6 +172,10 @@ public class GuiChat extends GuiScreenVisualViewport implements ITabCompleter {
 			if (itextcomponent != null && this.handleComponentClick(itextcomponent)) {
 				return;
 			}
+
+			if (net.aeroclient.module.misc.ChatCopyModule.tryCopy(this.mc.ingameGUI.getChatGUI())) {
+				return; // Aero Client: Chat Copy (only when the click didn't hit a link or other clickable text)
+			}
 			
 			if (mc.notifRenderer.handleClicked(this, mouseX, mouseY)) {
 				return;
@@ -234,6 +238,7 @@ public class GuiChat extends GuiScreenVisualViewport implements ITabCompleter {
 		}
 
 		super.drawScreen0(mouseX, mouseY, partialTicks);
+		net.aeroclient.module.misc.ChatCopyModule.drawFeedback(this.fontRendererObj, mouseX, mouseY); // Aero Client
 	}
 
 	/**

@@ -938,7 +938,8 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 					this.setupOverlayRendering();
 					GlStateManager.alphaFunc(RealOpenGLEnums.GL_GREATER, 0.1F);
 					long framebufferAge = this.overlayFramebuffer.getAge();
-					if (framebufferAge == -1l || framebufferAge > (Minecraft.getDebugFPS() < 25 ? 125l : 75l)) {
+					if (framebufferAge == -1l || framebufferAge > (Minecraft.getDebugFPS() < 25 ? 125l : 75l)
+							|| net.aeroclient.chat.ChatHooks.wantsSmoothChat()) { // Aero Client: smooth chat animations
 						this.overlayFramebuffer.beginRender(mc.displayWidth, mc.displayHeight);
 						GlStateManager.colorMask(true, true, true, true);
 						GlStateManager.clearColor(0.0f, 0.0f, 0.0f, 0.0f);

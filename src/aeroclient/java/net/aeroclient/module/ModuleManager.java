@@ -16,6 +16,13 @@ import net.aeroclient.module.hud.PingModule;
 import net.aeroclient.module.hud.PotionEffectsModule;
 import net.aeroclient.module.hud.ServerInfoModule;
 import net.aeroclient.module.hud.SpeedModule;
+import net.aeroclient.module.misc.AutoGGModule;
+import net.aeroclient.module.misc.BetterChatModule;
+import net.aeroclient.module.misc.ChatCopyModule;
+import net.aeroclient.module.misc.ChatStackingModule;
+import net.aeroclient.module.misc.ChatTimestampsModule;
+import net.aeroclient.module.misc.NameMentionModule;
+import net.aeroclient.module.misc.ScreenshotManagerModule;
 import net.aeroclient.module.misc.TestModule;
 import net.aeroclient.module.performance.BackgroundFpsModule;
 import net.aeroclient.module.performance.EntityCullingModule;
@@ -81,6 +88,14 @@ public final class ModuleManager {
 		register(new SmartChunkUpdatesModule());
 		register(new FastTextModule());
 		register(new BackgroundFpsModule());
+		// Misc modules (chat and screenshots)
+		register(new ChatTimestampsModule());
+		register(new NameMentionModule());
+		register(new ChatStackingModule());
+		register(new ChatCopyModule());
+		register(new BetterChatModule());
+		register(new AutoGGModule());
+		register(new ScreenshotManagerModule());
 
 		AeroClient.EVENTS.subscribe(KeyEvent.class, this::onKey);
 		AeroClient.LOGGER.info("Registered " + modules.size() + " module(s)");
